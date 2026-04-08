@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchestrating AI Agents with Claude Code CLI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f0e0c;
+  --ink-2: #3a3835;
+  --ink-3: #888580;
+  --paper: #faf8f4;
+  --paper-2: #f1ede4;
+  --paper-3: #e8e2d6;
+  --accent: #c94a1a;
+  --accent-2: #e8713f;
+  --teal: #1a6b5a;
+  --teal-light: #e0f0eb;
+  --purple: #4a3a9a;
+  --purple-light: #eeebfc;
+  --amber: #9a6210;
+  --amber-light: #fdf0d8;
+  --blue: #1a4a8a;
+  --blue-light: #e4eef9;
+  --rule: rgba(15,14,12,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 60px 32px 100px;
+}
+
+/* MASTHEAD */
+.masthead {
+  border-top: 3px solid var(--accent);
+  padding-top: 40px;
+  margin-bottom: 52px;
+}
+
+.kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kicker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--accent);
+  opacity: .3;
+}
+
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.12;
+  color: var(--ink);
+  margin-bottom: 22px;
+  letter-spacing: -.01em;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.deck {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  font-weight: 300;
+  max-width: 640px;
+  margin-bottom: 32px;
+  border-left: 3px solid var(--paper-3);
+  padding-left: 18px;
+}
+
+.byline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.byline-text { font-size: 14px; color: var(--ink-2); }
+.byline-text strong { display: block; font-size: 15px; color: var(--ink); font-weight: 500; }
+
+.reading-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-left: auto;
+  text-align: right;
+  letter-spacing: .04em;
+}
+
+/* BODY TEXT */
+.article-body { margin-top: 48px; }
+
+h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 56px 0 18px;
+  letter-spacing: -.01em;
+}
+
+h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 36px 0 12px;
+}
+
+p { margin-bottom: 20px; }
+
+p:last-child { margin-bottom: 0; }
+
+strong { font-weight: 600; }
+
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: var(--accent);
+}
+
+/* PULL QUOTE */
+.pullquote {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: 1.4;
+  color: var(--ink);
+  border-left: 4px solid var(--accent);
+  padding: 18px 0 18px 28px;
+  margin: 44px 0;
+  font-style: italic;
+}
+
+/* CODE BLOCK */
+.code-block {
+  background: #1a1917;
+  border-radius: 10px;
+  padding: 22px 24px;
+  margin: 28px 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+.code-block .lang-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #666;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.code-block pre {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: #e8e4dc;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.code-block .cm { color: #888; }
+.code-block .ck { color: #7ec8a4; }
+.code-block .cv { color: #e8c56d; }
+.code-block .cs { color: #f0956b; }
+.code-block .cf { color: #a8d4f0; }
+
+/* PATTERN CARDS */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 32px 0;
+}
+
+@media(max-width: 580px) {
+  .pattern-grid { grid-template-columns: 1fr; }
+}
+
+.pattern-card {
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: 12px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pattern-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.pattern-card.c-blue::before { background: var(--blue); }
+.pattern-card.c-teal::before { background: var(--teal); }
+.pattern-card.c-purple::before { background: var(--purple); }
+.pattern-card.c-amber::before { background: var(--amber); }
+.pattern-card.c-coral::before { background: var(--accent); }
+.pattern-card.c-gray::before { background: var(--ink-3); }
+
+.pattern-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.c-blue .pattern-num { color: var(--blue); }
+.c-teal .pattern-num { color: var(--teal); }
+.c-purple .pattern-num { color: var(--purple); }
+.c-amber .pattern-num { color: var(--amber); }
+.c-coral .pattern-num { color: var(--accent); }
+.c-gray .pattern-num { color: var(--ink-3); }
+
+.pattern-card h4 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+
+.pattern-card p {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin-bottom: 14px;
+}
+
+.pattern-tag {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: .04em;
+  margin-right: 4px;
+  margin-top: 4px;
+}
+
+.c-blue .pattern-tag { background: var(--blue-light); color: var(--blue); }
+.c-teal .pattern-tag { background: var(--teal-light); color: var(--teal); }
+.c-purple .pattern-tag { background: var(--purple-light); color: var(--purple); }
+.c-amber .pattern-tag { background: var(--amber-light); color: var(--amber); }
+.c-coral .pattern-tag { background: #fdeee8; color: var(--accent); }
+.c-gray .pattern-tag { background: var(--paper-2); color: var(--ink-2); }
+
+/* ARCH DIAGRAM */
+.arch-diagram {
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+  text-align: center;
+}
+
+.arch-diagram .layer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+
+.arch-box {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.arch-box.orchestrator {
+  background: var(--purple-light);
+  color: var(--purple);
+  border: 1px solid rgba(74,58,154,.2);
+  font-size: 12px;
+  padding: 10px 20px;
+}
+
+.arch-box.agent {
+  background: var(--teal-light);
+  color: var(--teal);
+  border: 1px solid rgba(26,107,90,.2);
+}
+
+.arch-box.tool {
+  background: var(--amber-light);
+  color: var(--amber);
+  border: 1px solid rgba(154,98,16,.2);
+  font-size: 10px;
+}
+
+.arch-arrow {
+  font-size: 18px;
+  color: var(--ink-3);
+  line-height: 1;
+}
+
+.arch-down {
+  display: flex;
+  justify-content: center;
+  color: var(--ink-3);
+  font-size: 20px;
+  margin: 2px 0;
+}
+
+/* COMPARISON TABLE */
+.comparison-wrap {
+  margin: 32px 0;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--paper-3);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.comparison-table thead tr {
+  background: var(--ink);
+  color: #fff;
+}
+
+.comparison-table thead th {
+  padding: 16px 18px;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .02em;
+}
+
+.comparison-table thead th:first-child {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.6);
+  width: 22%;
+}
+
+.comparison-table thead th.col-cli {
+  border-left: 2px solid var(--teal);
+  color: #7ee8c8;
+}
+
+.comparison-table thead th.col-sdk {
+  border-left: 2px solid var(--accent-2);
+  color: #fdb896;
+}
+
+.comparison-table tbody tr {
+  border-bottom: 1px solid var(--paper-2);
+}
+
+.comparison-table tbody tr:last-child { border-bottom: none; }
+.comparison-table tbody tr:nth-child(even) td { background: #fdf9f5; }
+
+.comparison-table td {
+  padding: 14px 18px;
+  vertical-align: top;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.comparison-table td:first-child {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-3);
+  font-weight: 500;
+  background: var(--paper-2) !important;
+  border-right: 1px solid var(--paper-3);
+  white-space: nowrap;
+}
+
+.comparison-table td.col-cli { border-left: 2px solid rgba(26,107,90,.15); }
+.comparison-table td.col-sdk { border-left: 2px solid rgba(201,74,26,.15); }
+
+.chip {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.chip-green { background: var(--teal-light); color: var(--teal); }
+.chip-amber { background: var(--amber-light); color: var(--amber); }
+.chip-red { background: #fdeee8; color: var(--accent); }
+.chip-blue { background: var(--blue-light); color: var(--blue); }
+.chip-gray { background: var(--paper-2); color: var(--ink-2); }
+
+/* CALLOUT BOX */
+.callout {
+  border-radius: 10px;
+  padding: 20px 22px;
+  margin: 32px 0;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.callout.info {
+  background: var(--blue-light);
+  border-left: 4px solid var(--blue);
+}
+
+.callout.warning {
+  background: var(--amber-light);
+  border-left: 4px solid var(--amber);
+}
+
+.callout.tip {
+  background: var(--teal-light);
+  border-left: 4px solid var(--teal);
+}
+
+.callout-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.callout-body { font-size: 14px; line-height: 1.65; color: var(--ink-2); }
+.callout-body strong { color: var(--ink); font-weight: 600; }
+
+/* DECISION MATRIX */
+.decision-list {
+  list-style: none;
+  margin: 20px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.decision-list li {
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.decision-list li .di {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.di-cli { background: var(--teal-light); color: var(--teal); }
+.di-sdk { background: #fdeee8; color: var(--accent); }
+.di-both { background: var(--purple-light); color: var(--purple); }
+
+/* FOOTER */
+.article-footer {
+  margin-top: 70px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: 20px;
+  padding: 5px 12px;
+  color: var(--ink-2);
+}
+
+.footer-note {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* HORIZONTAL RULE */
+hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 48px 0;
+}
+
+/* SECTION MARKER */
+.section-marker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.section-marker .num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 48px;
+  color: var(--paper-3);
+  line-height: 1;
+  font-style: italic;
+}
+
+/* INTRO LEAD */
+.lead {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin-bottom: 28px;
+}
+
+.lead strong { font-weight: 500; color: var(--ink); }
+
+@media print {
+  body { font-size: 14px; }
+  .page { padding: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="kicker">Engineering · Agentic AI · Developer Productivity</div>
+    <h1>Orchestrating AI Agents<br>with <em>Claude Code CLI</em></h1>
+    <p class="deck">
+      A practical guide to the six orchestration patterns — from a simple headless pipeline to full multi-agent teams — and a frank comparison of CLI headless mode versus the Agent SDK for regulated production workloads.
+    </p>
+    <div class="byline">
+      <div class="avatar">R</div>
+      <div class="byline-text">
+        <strong>Rajesh Ramamoorthy</strong>
+        Enterprise Architect · Fleet Management Platform · AWS · Agentic AI
+      </div>
+      <div class="reading-meta">8 min read<br>April 2026</div>
+    </div>
+  </div>
+
+  <!-- ARTICLE BODY -->
+  <div class="article-body">
+
+    <p class="lead">
+      Most developers treat Claude Code as an <strong>interactive coding assistant</strong>. But underneath the conversational surface sits a fully programmable agent runtime — one that supports six distinct orchestration architectures, each suited to a different class of problem.
+    </p>
+
+    <p>
+      After spending significant time integrating Claude Code into enterprise pipelines — spanning CI/CD automation, multi-domain service reviews, and regulated deployment gates — I have mapped these patterns against real production constraints. This article is the distillation.
+    </p>
+
+    <p>
+      We will cover the six patterns, when to reach for each, and — critically for architects working in regulated environments — a direct comparison of running Claude Code as a <strong>headless CLI</strong> versus using the <strong>Agent SDK</strong> for fine-grained programmatic control.
+    </p>
+
+    <hr>
+
+    <!-- SECTION 1 -->
+    <div class="section-marker">
+      <div class="num">01</div>
+      <h2 style="margin:0">Why Orchestration Pattern Matters</h2>
+    </div>
+
+    <p>
+      The most common failure mode I see is not a model capability problem — it is a structural mismatch. Developers reach for the most powerful pattern (agent teams, full autonomy) when the problem is linear. Or they use a single sequential agent for a parallelisable workload and wonder why it is slow and context-bloated.
+    </p>
+
+    <div class="pullquote">
+      "The culprit is almost never the model. It is using the wrong workflow pattern for the job."
+    </div>
+
+    <p>
+      Claude Code exposes six structural patterns. Think of them as a spectrum from <strong>lowest autonomy / lowest token cost</strong> to <strong>highest autonomy / highest token cost</strong>. Choosing correctly saves 40–60% on token spend and dramatically improves reliability.
+    </p>
+
+    <hr>
+
+    <!-- SECTION 2 -->
+    <div class="section-marker">
+      <div class="num">02</div>
+      <h2 style="margin:0">The Six Orchestration Patterns</h2>
+    </div>
+
+    <div class="pattern-grid">
+
+      <div class="pattern-card c-blue">
+        <span class="pattern-num">PATTERN 01 · LOWEST COST</span>
+        <h4>Sequential Pipeline</h4>
+        <p>One agent, ordered steps, each dependent on the prior output. The default mental model. Minimal overhead — no agent spawning, no context forking.</p>
+        <span class="pattern-tag">--continue</span>
+        <span class="pattern-tag">Multi-turn</span>
+        <span class="pattern-tag">CI reviews</span>
+      </div>
+
+      <div class="pattern-card c-teal">
+        <span class="pattern-num">PATTERN 02 · AUTOMATION CORE</span>
+        <h4>Headless / Batch</h4>
+        <p>Non-interactive, print-and-exit via <code>-p</code>. Combines with <code>--bare</code> for deterministic, ambient-config-free runs. The backbone of CI/CD integration.</p>
+        <span class="pattern-tag">-p flag</span>
+        <span class="pattern-tag">--bare</span>
+        <span class="pattern-tag">GitHub Actions</span>
+      </div>
+
+      <div class="pattern-card c-purple">
+        <span class="pattern-num">PATTERN 03 · RECOMMENDED DEFAULT</span>
+        <h4>Operator / Orchestrator</h4>
+        <p>One Opus/Sonnet orchestrator coordinates Haiku subagents for execution. Hierarchical planning-execution split. Typical 40–50% cost saving versus all-Sonnet.</p>
+        <span class="pattern-tag">--model opus</span>
+        <span class="pattern-tag">Subagents</span>
+        <span class="pattern-tag">Task delegation</span>
+      </div>
+
+      <div class="pattern-card c-amber">
+        <span class="pattern-num">PATTERN 04 · PARALLEL SPEED</span>
+        <h4>Split-and-Merge</h4>
+        <p>Independent subtasks run concurrently across worktrees or spawned agents; results merge at end. Linear speedup on parallelisable work. Higher token cost.</p>
+        <span class="pattern-tag">--worktree</span>
+        <span class="pattern-tag">Parallel</span>
+        <span class="pattern-tag">Fan-out</span>
+      </div>
+
+      <div class="pattern-card c-coral">
+        <span class="pattern-num">PATTERN 05 · MAX CAPABILITY</span>
+        <h4>Agent Teams</h4>
+        <p>Peer Claude instances — researcher, writer, reviewer — each with defined roles, tools, and model assignments. Collaborative, not hierarchical. Highest overhead.</p>
+        <span class="pattern-tag">--agents JSON</span>
+        <span class="pattern-tag">.claude/agents/</span>
+        <span class="pattern-tag">Multi-role</span>
+      </div>
+
+      <div class="pattern-card c-gray">
+        <span class="pattern-num">PATTERN 06 · ISOLATION</span>
+        <h4>Worktree Isolation</h4>
+        <p>Each agent or task gets its own git worktree — full branch isolation, zero merge conflicts. Auto-cleaned if unchanged. Used internally by <code>/batch</code>.</p>
+        <span class="pattern-tag">--worktree</span>
+        <span class="pattern-tag">isolation: worktree</span>
+        <span class="pattern-tag">Parallel PRs</span>
+      </div>
+
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-icon">⚡</div>
+      <div class="callout-body">
+        <strong>Patterns compose.</strong> A production workflow might use an Operator orchestrator at the top level, which triggers a Split-and-Merge phase for parallel domain analysis, followed by a Sequential pipeline for report generation, with a final Agent Team review before the PR gate. You are not locked into one pattern per run.
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 3: OPERATOR DEEP DIVE -->
+    <div class="section-marker">
+      <div class="num">03</div>
+      <h2 style="margin:0">Deep Dive: The Operator Pattern</h2>
+    </div>
+
+    <p>
+      The Operator pattern is the workhorse for complex, multi-domain tasks. It separates <strong>strategic reasoning</strong> (orchestrator) from <strong>tactical execution</strong> (subagents), mirroring how senior engineers actually delegate — the lead architect defines the approach; specialists implement it.
+    </p>
+
+    <div class="arch-diagram">
+      <div class="layer">
+        <div class="arch-box orchestrator">Orchestrator · claude-opus-4-6</div>
+      </div>
+      <div class="arch-down">↓ &nbsp; delegates tasks via Task tool</div>
+      <div class="layer">
+        <div class="arch-box agent">security-reviewer<br><small style="font-size:9px;opacity:.7">haiku · Read, Grep</small></div>
+        <div class="arch-box agent">db-expert<br><small style="font-size:9px;opacity:.7">sonnet · Bash, Read</small></div>
+        <div class="arch-box agent">observability-eng<br><small style="font-size:9px;opacity:.7">haiku · Read, Grep</small></div>
+      </div>
+      <div class="arch-down">↓ &nbsp; results consolidate back to orchestrator</div>
+      <div class="layer">
+        <div class="arch-box tool">Bash</div>
+        <div class="arch-box tool">Read</div>
+        <div class="arch-box tool">Edit</div>
+        <div class="arch-box tool">Grep</div>
+        <div class="arch-box tool">MCP tools</div>
+      </div>
+    </div>
+
+    <p>
+      The key architectural insight: <strong>exploration tokens should never pollute the orchestrator's context window</strong>. When you instruct the orchestrator to "use an explore agent to find all authentication-related files," those file reads happen in a subagent context that is discarded after use. The orchestrator only receives the distilled result.
+    </p>
+
+    <h3>Defining subagents</h3>
+    <p>
+      Subagents live in <code>.claude/agents/</code> (project-scoped, team-shared) or <code>~/.claude/agents/</code> (personal, all projects). Frontmatter controls model, tools, permission mode, and invocation behaviour:
+    </p>
+
+    <div class="code-block">
+      <span class="lang-label">yaml · .claude/agents/security-reviewer.md</span>
+      <pre><span class="cm">---</span>
+<span class="ck">name</span>: security-reviewer
+<span class="ck">description</span>: Expert security code reviewer. Use PROACTIVELY after any
+  changes to authentication, authorisation, or data handling.
+<span class="ck">model</span>: claude-haiku-4-5
+<span class="ck">tools</span>: Read, Grep, Glob, Bash
+<span class="ck">permissionMode</span>: plan
+<span class="cm">---</span>
+
+You are a senior security engineer. When invoked:
+<span class="cv">1.</span> Identify files recently changed (git diff)
+<span class="cv">2.</span> Analyse for OWASP Top 10 vulnerabilities
+<span class="cv">3.</span> Check for secrets, SQL injection, improper auth
+<span class="cv">4.</span> Return structured findings with severity ratings</pre>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <strong>Model cost ladder:</strong> Haiku (~$0.80/MTok) → Sonnet (~$3/MTok) → Opus (~$15/MTok). Reserve Opus for the orchestrator's planning and synthesis. Most subagent work — file reads, grep, straightforward analysis — does not need Sonnet-level reasoning. A mixed fleet cuts session cost 40–50%.
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 4: HEADLESS VS SDK -->
+    <div class="section-marker">
+      <div class="num">04</div>
+      <h2 style="margin:0">Headless CLI vs Agent SDK:<br>A Regulated Environment Comparison</h2>
+    </div>
+
+    <p>
+      This is where the architecture decision becomes consequential for enterprise teams. Claude Code's <code>--bare -p</code> mode (headless CLI) and the Python/TypeScript <strong>Agent SDK</strong> both enable programmatic execution — but they represent fundamentally different control postures.
+    </p>
+
+    <p>
+      The headless CLI is optimised for <strong>speed and simplicity</strong>. The Agent SDK is optimised for <strong>auditability, governance, and integration</strong>. In regulated environments — financial services, healthcare, government — the tradeoffs below are not academic.
+    </p>
+
+    <div class="comparison-wrap">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th class="col-cli">Headless CLI &nbsp;·&nbsp; <code>--bare -p</code></th>
+            <th class="col-sdk">Agent SDK &nbsp;·&nbsp; Python / TypeScript</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Invocation model</td>
+            <td class="col-cli">Shell subprocess. Prompt as CLI arg or stdin. Fire-and-forget or capture stdout.</td>
+            <td class="col-sdk">Native library call. Full async control, callbacks, and structured message objects.</td>
+          </tr>
+          <tr>
+            <td>Tool approval</td>
+            <td class="col-cli"><code>--allowedTools</code> pattern list declared at launch. Static per invocation.<br><span class="chip chip-amber">Coarse-grained</span></td>
+            <td class="col-sdk">Per-tool-call approval callbacks. Approve, deny, or modify tool inputs programmatically.<br><span class="chip chip-green">Fine-grained</span></td>
+          </tr>
+          <tr>
+            <td>Audit trail</td>
+            <td class="col-cli">JSON output with session metadata. Tool calls visible in <code>stream-json</code> mode. No native structured event log.<br><span class="chip chip-amber">Basic</span></td>
+            <td class="col-sdk">Full message event stream with typed objects. Every tool use, tool result, and model turn is a first-class event. Emit directly to SIEM / audit log.<br><span class="chip chip-green">Full event log</span></td>
+          </tr>
+          <tr>
+            <td>Secrets management</td>
+            <td class="col-cli"><code>ANTHROPIC_API_KEY</code> env var or <code>--settings</code> JSON. Exposed as process env in container.<br><span class="chip chip-amber">Env-level</span></td>
+            <td class="col-sdk">Injected at runtime via SDK config. Integrates directly with AWS Secrets Manager, Vault, or KMS — no env var required.<br><span class="chip chip-green">Runtime injection</span></td>
+          </tr>
+          <tr>
+            <td>Human-in-the-loop</td>
+            <td class="col-cli">No native mid-run pause. Workaround: permission modes or multi-invocation chains with human-gated shell scripts.<br><span class="chip chip-red">Limited</span></td>
+            <td class="col-sdk">First-class approval gates. Pause execution, surface context to human reviewer, resume or abort — all within one session.<br><span class="chip chip-green">Native</span></td>
+          </tr>
+          <tr>
+            <td>Error handling</td>
+            <td class="col-cli">Retry events emitted as <code>system/api_retry</code> in stream-json. Catch in shell; implement custom backoff externally.<br><span class="chip chip-amber">External</span></td>
+            <td class="col-sdk">Typed exceptions, retry hooks, and custom backoff strategies in-process. Structured error taxonomy.<br><span class="chip chip-green">In-process</span></td>
+          </tr>
+          <tr>
+            <td>Session continuity</td>
+            <td class="col-cli">Session IDs via <code>--resume</code>. Stateless between invocations; must capture and thread IDs externally.<br><span class="chip chip-amber">Manual</span></td>
+            <td class="col-sdk">Session object persisted in-process. History, context, and tool state managed natively across multi-turn flows.<br><span class="chip chip-green">Managed</span></td>
+          </tr>
+          <tr>
+            <td>Structured output</td>
+            <td class="col-cli"><code>--output-format json</code> + <code>--json-schema</code>. Schema validation post-hoc via jq or shell parsing.<br><span class="chip chip-amber">Schema-constrained</span></td>
+            <td class="col-sdk">Native typed response objects. Pydantic / Zod validation in-process. No shell parsing required.<br><span class="chip chip-green">Typed native</span></td>
+          </tr>
+          <tr>
+            <td>MCP integration</td>
+            <td class="col-cli"><code>--mcp-config &lt;file&gt;</code> at launch. Static per invocation. Cannot swap servers mid-run.</td>
+            <td class="col-sdk">MCP servers added/removed programmatically at runtime. Dynamic tool surfaces per workflow stage.</td>
+          </tr>
+          <tr>
+            <td>Context window control</td>
+            <td class="col-cli"><code>--bare</code> strips ambient context. <code>/compact</code> in-session only. No programmatic trim.<br><span class="chip chip-amber">Coarse</span></td>
+            <td class="col-sdk">Full programmatic control over message history. Inject, truncate, or rewrite context between turns.<br><span class="chip chip-green">Precise</span></td>
+          </tr>
+          <tr>
+            <td>Compliance controls</td>
+            <td class="col-cli">Permission modes, <code>--disallowedTools</code>. Governance via wrapper scripts and container policy.<br><span class="chip chip-amber">Perimeter-based</span></td>
+            <td class="col-sdk">Inline policy enforcement. Block tool calls matching PII patterns, enforce dry-run mode for production, log all model decisions with full context.<br><span class="chip chip-green">Inline governance</span></td>
+          </tr>
+          <tr>
+            <td>Setup complexity</td>
+            <td class="col-cli"><code>npm install -g @anthropic-ai/claude-code</code>. Works immediately. No code required.<br><span class="chip chip-green">Minimal</span></td>
+            <td class="col-sdk">SDK package + agent loop implementation + callback wiring. Meaningful initial investment.<br><span class="chip chip-red">Higher</span></td>
+          </tr>
+          <tr>
+            <td>Best fit</td>
+            <td class="col-cli">
+              <span class="chip chip-green">CI code review</span>
+              <span class="chip chip-green">Automated refactors</span>
+              <span class="chip chip-green">Nightly test runs</span>
+              <span class="chip chip-green">Developer tooling</span>
+            </td>
+            <td class="col-sdk">
+              <span class="chip chip-blue">BFSI workflows</span>
+              <span class="chip chip-blue">Regulated deploys</span>
+              <span class="chip chip-blue">Audit-required tasks</span>
+              <span class="chip chip-blue">Human-in-loop flows</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 5: DECISION GUIDE -->
+    <div class="section-marker">
+      <div class="num">05</div>
+      <h2 style="margin:0">When to Use Which</h2>
+    </div>
+
+    <p>A practical decision guide based on the shape of your task and your compliance posture:</p>
+
+    <ul class="decision-list">
+      <li>
+        <span class="di di-cli">CLI</span>
+        PR review automation, nightly code quality gates, automated documentation generation — any workflow that is <strong>well-defined, stateless, and repeatable</strong> without mid-run decisions.
+      </li>
+      <li>
+        <span class="di di-cli">CLI</span>
+        Developer inner loop: <code>claude</code> interactive + <code>--worktree</code> for exploratory parallel spikes. Low ceremony, high velocity.
+      </li>
+      <li>
+        <span class="di di-sdk">SDK</span>
+        Any workflow that touches <strong>production data, financial records, or PII</strong> — where every tool invocation must be logged with full context and potentially human-approved.
+      </li>
+      <li>
+        <span class="di di-sdk">SDK</span>
+        Multi-stage deployment pipelines in regulated environments where <strong>each stage requires a policy check</strong> — the SDK's per-call approval callback is the right primitive.
+      </li>
+      <li>
+        <span class="di di-both">BOTH</span>
+        Complex enterprise workflows can layer both: CLI headless for the non-sensitive planning and analysis phase, SDK for the execution phase that touches production systems. The session ID bridges them.
+      </li>
+    </ul>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ</div>
+      <div class="callout-body">
+        <strong>Fleet management context:</strong> In our platform — Spring Boot / Vert.x services, ECS Fargate, DynamoDB — we use headless CLI for PR analysis and test automation across the vehicle ordering domain. Any agent task that touches supplier data or triggers order state transitions routes through the Agent SDK with approval gates mapped to our domain event boundaries.
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 6: TOKEN DISCIPLINE -->
+    <div class="section-marker">
+      <div class="num">06</div>
+      <h2 style="margin:0">Token Discipline in Agent Loops</h2>
+    </div>
+
+    <p>
+      Token cost in agentic workflows is <strong>not linear with task complexity</strong> — it compounds. A 100-iteration debug loop with unrestricted Bash tool use adds approximately 24,500 extra input tokens in tool-call overhead alone. Three practical controls make the largest difference:
+    </p>
+
+    <div class="code-block">
+      <span class="lang-label">bash · cost-optimised CI invocation pattern</span>
+      <pre><span class="cm"># 1. --bare strips ambient context (CLAUDE.md, skills, MCP, auto-memory)</span>
+<span class="cm"># 2. --disallowedTools removes tool schemas from context</span>
+<span class="cm"># 3. --effort low reduces thinking budget on well-scoped tasks</span>
+<span class="cm"># 4. Haiku for the subagent; Sonnet only for final synthesis</span>
+
+<span class="cf">claude</span> <span class="cv">--bare</span> \
+  <span class="cv">-p</span> <span class="cs">"Review the auth module for security issues"</span> \
+  <span class="cv">--model</span> <span class="cs">claude-haiku-4-5</span> \
+  <span class="cv">--disallowedTools</span> <span class="cs">"Bash,Edit"</span> \
+  <span class="cv">--allowedTools</span> <span class="cs">"Read,Grep,Glob"</span> \
+  <span class="cv">--effort</span> <span class="cs">low</span> \
+  <span class="cv">--output-format</span> <span class="cs">json</span> \
+  <span class="cv">--json-schema</span> <span class="cs">'{"type":"object","properties":{"findings":{"type":"array"}}}'</span></pre>
+    </div>
+
+    <p>
+      The escalation ladder is the single most impactful heuristic: <strong>Haiku → Sonnet → Opus</strong>. Start with Haiku. If the output feels shallow or the reasoning is wrong, escalate. Reserve Opus for architectural decisions, complex synthesis, and orchestrator-level planning. Never use Opus for file reads or grep operations.
+    </p>
+
+    <hr>
+
+    <!-- CLOSING -->
+    <div class="section-marker">
+      <div class="num">07</div>
+      <h2 style="margin:0">Closing Thoughts</h2>
+    </div>
+
+    <p>
+      Claude Code is often framed as a developer productivity tool. That framing undersells it. What Anthropic has built is a <strong>programmable agent runtime</strong> with a conversational interface as its most visible surface.
+    </p>
+
+    <p>
+      The orchestration patterns are the architecture. The CLI flags are the configuration. The Agent SDK is the governance layer. Used deliberately — with the right pattern for the right task and the right tool for the right environment — this is a genuine step change in how we build and operate software systems.
+    </p>
+
+    <div class="pullquote">
+      "Scalability before convenience. Operability before elegance. Compliance before experimentation."
+    </div>
+
+    <p>
+      That lens still holds. The Operator pattern with explicit subagent definitions, <code>--bare</code> in CI, and the Agent SDK at production execution boundaries — that is the architecture I would recommend to any enterprise team adopting agentic AI today.
+    </p>
+
+    <p>
+      What patterns are you using? Happy to discuss implementation specifics in the comments — particularly around MCP integration, hooks for governance, and CLAUDE.md design for multi-domain platforms.
+    </p>
+
+  </div><!-- /article-body -->
+
+  <!-- FOOTER -->
+  <div class="article-footer">
+    <div class="tags">
+      <span class="tag">#AIEngineering</span>
+      <span class="tag">#ClaudeCode</span>
+      <span class="tag">#AgenticAI</span>
+      <span class="tag">#EnterpriseArchitecture</span>
+      <span class="tag">#DevOps</span>
+      <span class="tag">#AWS</span>
+      <span class="tag">#SoftwareEngineering</span>
+      <span class="tag">#MLOps</span>
+    </div>
+    <p class="footer-note">
+      All CLI flags and SDK behaviours reference the Claude Code 2026 documentation at code.claude.com/docs. Token pricing indicative as of April 2026. Architecture diagrams reflect the author's production implementation patterns; your mileage will vary based on domain constraints and compliance requirements.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
