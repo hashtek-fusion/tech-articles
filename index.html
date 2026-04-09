@@ -926,14 +926,7 @@ You are a senior security engineer. When invoked:
         <span class="di di-both">BOTH</span>
         Complex enterprise workflows can layer both: CLI headless for the non-sensitive planning and analysis phase, SDK for the execution phase that touches production systems. The session ID bridges them.
       </li>
-    </ul>
-
-    <div class="callout info">
-      <div class="callout-icon">ℹ</div>
-      <div class="callout-body">
-        <strong>Fleet management context:</strong> In our platform — Spring Boot / Vert.x services, ECS Fargate, DynamoDB — we use headless CLI for PR analysis and test automation across the vehicle ordering domain. Any agent task that touches supplier data or triggers order state transitions routes through the Agent SDK with approval gates mapped to our domain event boundaries.
-      </div>
-    </div>
+    </ul>    
 
     <hr>
 
