@@ -1,0 +1,621 @@
+<title>Gatekeeping Agent Tools</title>
+<style>
+  :root {
+    --bg: #EFF1F4;
+    --surface: #FFFFFF;
+    --surface-2: #E3E7EC;
+    --ink: #1B1F27;
+    --ink-soft: #565E6C;
+    --border: #D2D7DF;
+    --accent: #9C6A1E;
+    --accent-soft: #EADFC8;
+    --permit: #2F6B4C;
+    --permit-soft: #DCEBE1;
+    --forbid: #A23B27;
+    --forbid-soft: #F3DDD6;
+    --code-bg: #161A22;
+    --code-ink: #E8EAED;
+    --code-soft: #93A0AF;
+    --font-display: 'Fraunces', Georgia, 'Iowan Old Style', serif;
+    --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11151E;
+      --surface: #191E28;
+      --surface-2: #212836;
+      --ink: #E7E9EE;
+      --ink-soft: #9CA5B3;
+      --border: #2C3341;
+      --accent: #E3A94A;
+      --accent-soft: #3A2F1C;
+      --permit: #6FBE95;
+      --permit-soft: #1E3428;
+      --forbid: #E4805F;
+      --forbid-soft: #3A241E;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11151E;
+    --surface: #191E28;
+    --surface-2: #212836;
+    --ink: #E7E9EE;
+    --ink-soft: #9CA5B3;
+    --border: #2C3341;
+    --accent: #E3A94A;
+    --accent-soft: #3A2F1C;
+    --permit: #6FBE95;
+    --permit-soft: #1E3428;
+    --forbid: #E4805F;
+    --forbid-soft: #3A241E;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16.5px;
+    line-height: 1.7;
+    padding: 0 20px;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-block: 56px 96px;
+  }
+
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; font-weight: 600; color: var(--ink); }
+  h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.01em; }
+  h2 {
+    font-size: 1.55rem;
+    margin: 3.2em 0 0.9em;
+    padding-top: 0.6em;
+    border-top: 1px solid var(--border);
+  }
+  h2:first-of-type { margin-top: 2.4em; }
+  h3 { font-family: var(--font-body); font-weight: 600; font-size: 1.02rem; margin: 1.8em 0 0.6em; }
+  .eyebrow {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.72rem;
+    letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent);
+  }
+  p { margin: 0 0 1.1em; max-width: 40em; }
+  ul, ol { margin: 0 0 1.2em; padding-left: 1.4em; }
+  li { margin-bottom: 0.5em; max-width: 38em; }
+  li > p { margin-bottom: 0.3em; }
+  a { color: var(--accent); text-decoration-thickness: 1px; }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2);
+    padding: 0.15em 0.4em; border-radius: 4px; color: var(--ink);
+  }
+
+  .lede { font-size: 1.12rem; color: var(--ink-soft); max-width: 38em; }
+
+  .toc {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 22px; margin: 28px 0 40px;
+  }
+  .toc-label { margin: 0 0 8px; }
+  .toc ol { list-style: none; padding-left: 0; margin: 0; columns: 2; column-gap: 28px; }
+  .toc li { margin-bottom: 6px; font-size: 0.92rem; }
+  .toc a { color: var(--ink); text-decoration: none; }
+  .toc a:hover { color: var(--accent); }
+  .toc-num { font-family: var(--font-mono); color: var(--accent); margin-right: 6px; font-size: 0.85em; }
+  @media (max-width: 520px) { .toc ol { columns: 1; } }
+
+  figure { margin: 1.8em 0 2.2em; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption {
+    font-size: 0.86rem; color: var(--ink-soft); margin-top: 10px; max-width: 42em;
+  }
+  .diagram-frame {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 18px 14px;
+  }
+
+  pre {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto; font-family: var(--font-mono);
+    font-size: 0.84rem; line-height: 1.6; margin: 1.1em 0 1.6em;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+  .code-label {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: -0.6em;
+  }
+  .code-label .eyebrow { margin: 0; }
+
+  .tag {
+    display: inline-block; font-family: var(--font-body); font-weight: 600;
+    font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 5px; vertical-align: middle;
+  }
+  .tag-permit { background: var(--permit-soft); color: var(--permit); }
+  .tag-forbid { background: var(--forbid-soft); color: var(--forbid); }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 16px 20px; border-radius: 6px; margin: 1.6em 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .eyebrow { display: block; margin-bottom: 6px; }
+
+  .steps { list-style: none; padding-left: 0; counter-reset: step; }
+  .steps > li {
+    counter-increment: step; position: relative; padding-left: 2.4em; margin-bottom: 1.5em;
+  }
+  .steps > li::before {
+    content: counter(step); position: absolute; left: 0; top: 0.05em;
+    font-family: var(--font-mono); font-weight: 600; font-size: 0.82rem;
+    width: 1.6em; height: 1.6em; border-radius: 50%;
+    background: var(--surface-2); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .steps > li strong { display: block; margin-bottom: 0.25em; font-size: 1rem; }
+
+  .pitfall {
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+    padding: 16px 20px; margin-bottom: 14px;
+  }
+  .pitfall h3 { margin: 0 0 6px; font-size: 0.98rem; }
+  .pitfall p { margin-bottom: 0; font-size: 0.95rem; }
+
+  .arm { fill: none; stroke: currentColor; stroke-width: 1.4; }
+  .arm-dashed { fill: none; stroke-dasharray: 4 3; }
+  .lbl { font-family: var(--font-mono); font-size: 11px; fill: currentColor; }
+  .lbl-soft { fill: var(--ink-soft); }
+  .lifeline { stroke: var(--border); stroke-width: 1.2; stroke-dasharray: 3 3; }
+  .box-fill { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.2; }
+  .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.3; }
+
+  footer {
+    margin-top: 4em; padding-top: 1.6em; border-top: 1px solid var(--border);
+    font-size: 0.86rem; color: var(--ink-soft);
+  }
+  footer a { color: var(--ink-soft); }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="page">
+
+  <span class="eyebrow">Architecture reference &middot; for architects &amp; developers</span>
+  <h1>Gatekeeping Agent Tools</h1>
+  <p class="lede">
+    How to expose an existing Lambda function as a tool an AI agent can call
+    through Amazon Bedrock AgentCore Gateway — and why that alone doesn't
+    control <em>which</em> tools a given caller may use. This is a generic
+    walkthrough of the wiring, the gap it leaves, and how AgentCore's Policy
+    service (Cedar-based, evaluated per tool call) closes it.
+  </p>
+
+  <nav class="toc" aria-label="Table of contents">
+    <p class="toc-label eyebrow">On this page</p>
+    <ol>
+      <li><span class="toc-num">01</span><a href="#architecture">The shape of a Gateway integration</a></li>
+      <li><span class="toc-num">02</span><a href="#steps">Exposing a Lambda as a tool</a></li>
+      <li><span class="toc-num">03</span><a href="#gap">The gap: authenticated, not authorized</a></li>
+      <li><span class="toc-num">04</span><a href="#policy">Per-tool authorization with Policy</a></li>
+      <li><span class="toc-num">05</span><a href="#example">A worked two-tool example</a></li>
+      <li><span class="toc-num">06</span><a href="#pitfalls">Six things that will trip you up</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="architecture">01 &middot; The shape of a Gateway integration</h2>
+  <p>
+    AgentCore Gateway sits between an agent (or any MCP client) and the
+    backend that does the real work. In the simplest, most common setup,
+    that backend is a Lambda function the Gateway invokes directly — no
+    OpenAPI spec to author or host, just an inline description of the
+    tool's name, purpose, and input shape.
+  </p>
+
+  <figure>
+    <div class="diagram-frame">
+      <svg viewBox="0 0 680 260" role="img" aria-label="Architecture diagram: an agent authenticates to an AgentCore Gateway with either SigV4 or a bearer token; the Gateway's GatewayTarget invokes a Lambda function directly, secured by a two-way IAM relationship — the Gateway's execution role grants it invoke permission, and the Lambda's own resource policy admits only that Gateway.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="70" width="150" height="64" rx="8" class="box-fill" />
+        <text x="95" y="97" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Agent /</text>
+        <text x="95" y="113" text-anchor="middle" class="lbl" font-size="12" font-weight="600">MCP client</text>
+
+        <rect x="265" y="60" width="160" height="84" rx="8" class="box-accent" />
+        <text x="345" y="90" text-anchor="middle" class="lbl" font-size="12" font-weight="600">AgentCore</text>
+        <text x="345" y="106" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Gateway</text>
+        <text x="345" y="126" text-anchor="middle" class="lbl lbl-soft" font-size="10">AWS_IAM or CUSTOM_JWT</text>
+
+        <rect x="510" y="70" width="150" height="64" rx="8" class="box-fill" />
+        <text x="585" y="97" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Lambda</text>
+        <text x="585" y="113" text-anchor="middle" class="lbl" font-size="12" font-weight="600">function</text>
+
+        <line x1="170" y1="102" x2="263" y2="102" class="arm" marker-end="url(#arrow)" />
+        <text x="217" y="88" text-anchor="middle" class="lbl lbl-soft" font-size="9.5">SigV4 or bearer token</text>
+
+        <line x1="427" y1="102" x2="508" y2="102" class="arm" marker-end="url(#arrow)" />
+        <text x="467" y="88" text-anchor="middle" class="lbl lbl-soft" font-size="9.5">GatewayTarget</text>
+        <text x="467" y="76" text-anchor="middle" class="lbl lbl-soft" font-size="9.5">(native Lambda)</text>
+
+        <line x1="345" y1="172" x2="345" y2="200" class="arm arm-dashed" style="color:var(--ink-soft)" marker-end="url(#arrow)" />
+        <text x="357" y="188" class="lbl lbl-soft" font-size="10">execution role</text>
+        <text x="357" y="200" class="lbl lbl-soft" font-size="10">→ lambda:InvokeFunction</text>
+
+        <line x1="585" y1="200" x2="585" y2="172" class="arm arm-dashed" style="color:var(--ink-soft)" marker-end="url(#arrow)" />
+        <text x="470" y="230" text-anchor="middle" class="lbl lbl-soft" font-size="10">Lambda resource policy → allow bedrock-agentcore.amazonaws.com,</text>
+        <text x="470" y="245" text-anchor="middle" class="lbl lbl-soft" font-size="10">scoped by SourceArn to this Gateway (confused-deputy protection)</text>
+      </svg>
+    </div>
+    <figcaption>
+      <strong>Fig. 1.</strong> The trust runs both directions: the Gateway's own execution
+      role is what lets it call the Lambda, and the Lambda's resource policy is
+      what lets the Gateway call it — each scoped narrowly, not to "any Lambda"
+      or "any Gateway."
+    </figcaption>
+  </figure>
+
+  <p>
+    Two decisions here are independent of each other, and worth naming
+    separately because it's easy to conflate them:
+  </p>
+  <ul>
+    <li><strong>Target type</strong> — how the Gateway reaches the backend.
+    A native Lambda target (shown above) invokes directly with the Gateway's
+    own credentials. An OpenAPI-schema target instead proxies to an HTTP API,
+    with its own separate credential provider. Neither implies anything about
+    who's allowed to call the Gateway.</li>
+    <li><strong>Authorizer type</strong> — how the Gateway authenticates
+    <em>callers</em>. <code>AWS_IAM</code> means only SigV4-signing callers in
+    your account get in. <code>CUSTOM_JWT</code> validates an OAuth bearer
+    token against any OIDC-compatible identity provider, which is what lets
+    a caller outside AWS — a third-party agent platform, a laptop running an
+    MCP client — connect at all.</li>
+  </ul>
+
+  <h2 id="steps">02 &middot; Exposing a Lambda as a tool</h2>
+  <p>
+    Given a Lambda that already does something useful, turning it into a
+    tool an agent can call is mostly declarative. In order:
+  </p>
+
+  <ol class="steps">
+    <li>
+      <strong>Create the Gateway.</strong>
+      <p><code>AWS::BedrockAgentCore::Gateway</code>, <code>ProtocolType: MCP</code>,
+      and an <code>AuthorizerType</code> — start with <code>AWS_IAM</code> if every
+      caller is inside your own account, or <code>CUSTOM_JWT</code> with a
+      <code>DiscoveryUrl</code> pointed at your identity provider if any caller
+      isn't. This choice is one-way in practice: the live service rejects an
+      in-place change to an existing gateway's <code>AuthorizerType</code>, so
+      switching later means deleting and recreating it.</p>
+    </li>
+    <li>
+      <strong>Give the Gateway an execution role.</strong>
+      <p>Trusted by the <code>bedrock-agentcore.amazonaws.com</code> service
+      principal, with a permission policy scoped to
+      <code>lambda:InvokeFunction</code> on exactly the Lambda ARN you're
+      exposing — not a wildcard.</p>
+    </li>
+    <li>
+      <strong>Add a GatewayTarget.</strong>
+      <p><code>AWS::BedrockAgentCore::GatewayTarget</code>, native Lambda
+      configuration, <code>CredentialProviderType: GATEWAY_IAM_ROLE</code> (so
+      it uses the role from step 2, not a separate credential provider), and
+      an inline <code>ToolSchema</code> — one entry per tool, each with a
+      <code>Name</code>, a <code>Description</code> the agent will read to
+      decide when to call it, and an <code>InputSchema</code>.</p>
+    </li>
+    <li>
+      <strong>Grant the Gateway permission on the Lambda side too.</strong>
+      <p>A resource-based <code>AWS::Lambda::Permission</code> allowing
+      <code>bedrock-agentcore.amazonaws.com</code> to invoke it, with
+      <code>SourceArn</code> scoped to this specific Gateway's ARN.</p>
+    </li>
+    <li>
+      <strong>Make sure the Lambda actually understands the call.</strong>
+      <p>This is the one step that isn't boilerplate. The Gateway invokes
+      your Lambda with the tool's arguments as the event payload and expects
+      a response it can hand back as the tool result. A Lambda that was only
+      ever written to sit behind an API-Gateway-proxy integration won't
+      necessarily understand that shape without an adapter — this is real
+      integration work, not configuration.</p>
+    </li>
+    <li>
+      <strong>Test it as a real MCP client would.</strong>
+      <p>Bearer-token (<code>CUSTOM_JWT</code>) auth can be exercised with any
+      generic MCP client, since it's just a header. SigV4 (<code>AWS_IAM</code>)
+      can't — it needs a fresh signature computed over each request, so a
+      tool that only lets you paste a static header won't work for it; you
+      need something that signs the request itself.</p>
+    </li>
+  </ol>
+
+  <p>
+    Once a Gateway and its Auth setup exist, adding a <em>second</em> Lambda
+    as another tool is cheaper still: authorization is configured once, at
+    the Gateway, not per target — so a new <code>GatewayTarget</code> under
+    the same Gateway inherits the existing auth automatically. What doesn't
+    get cheaper is step 5 and the schema in step 3, and — as the next
+    section covers — nothing here yet decides whether a given caller
+    <em>should</em> be allowed to use that new tool.
+  </p>
+
+  <h2 id="gap">03 &middot; The gap: authenticated, not authorized</h2>
+  <div class="callout">
+    <span class="eyebrow">The load-bearing sentence</span>
+    <p>
+      The Gateway's authorizer answers one question — <em>is this caller who
+      they claim to be?</em> — once, at the door. It does not answer
+      <em>which tools should this caller be allowed to use?</em> A valid
+      token or IAM identity unlocks every tool behind that Gateway equally.
+      There's no schema field, no per-target setting, that narrows it further.
+    </p>
+  </div>
+  <p>
+    That's fine for a Gateway with one read-only tool. It stops being fine
+    the moment a second tool does something with side effects, touches
+    different data, or should only be available to some callers and not
+    others — and by then, the tools are already sharing one door.
+  </p>
+
+  <h2 id="policy">04 &middot; Per-tool authorization with Policy</h2>
+  <p>
+    AgentCore's Policy service sits exactly at that gap. A <strong>policy
+    engine</strong> holds a set of rules, written in
+    <a href="https://www.cedarpolicy.com/en" target="_blank" rel="noopener">Cedar</a>
+    (AWS's open-source authorization language — also authorable as plain
+    English, which gets translated to Cedar and validated before it's saved).
+    You associate the engine with a Gateway once, and from then on, every
+    tool call is evaluated against those rules before the Lambda is ever
+    invoked.
+  </p>
+
+  <figure>
+    <div class="diagram-frame">
+      <svg viewBox="0 0 680 400" role="img" aria-label="Sequence diagram: an agent calls a tool through the Gateway. The Gateway validates the token, then asks the Policy Engine to evaluate the call. On permit, the Gateway invokes the Lambda and returns the result. On forbid, the Gateway returns an error directly to the agent and the Lambda is never invoked.">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+          </marker>
+        </defs>
+
+        <text x="60" y="24" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Agent</text>
+        <text x="250" y="24" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Gateway</text>
+        <text x="440" y="24" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Policy engine</text>
+        <text x="610" y="24" text-anchor="middle" class="lbl" font-size="12" font-weight="600">Lambda</text>
+
+        <line x1="60" y1="36" x2="60" y2="378" class="lifeline" />
+        <line x1="250" y1="36" x2="250" y2="378" class="lifeline" />
+        <line x1="440" y1="36" x2="440" y2="378" class="lifeline" />
+        <line x1="610" y1="36" x2="610" y2="378" class="lifeline" />
+
+        <line x1="60" y1="60" x2="248" y2="60" class="arm" marker-end="url(#arrow2)" />
+        <text x="70" y="52" class="lbl lbl-soft" font-size="10">tools/call "update_data" (bearer token)</text>
+
+        <path d="M 250,80 C 290,80 290,102 250,102" class="arm" style="color:var(--ink-soft)" marker-end="url(#arrow2)" />
+        <text x="298" y="95" class="lbl lbl-soft" font-size="10">validate token</text>
+
+        <line x1="250" y1="128" x2="438" y2="128" class="arm" marker-end="url(#arrow2)" />
+        <text x="255" y="120" class="lbl lbl-soft" font-size="9.5">evaluate(principal, action, resource, input)</text>
+
+        <line x1="440" y1="152" x2="252" y2="152" class="arm" marker-end="url(#arrow2)" />
+        <text x="255" y="145" class="lbl lbl-soft" font-size="10">decision</text>
+
+        <rect x="220" y="168" width="70" height="22" rx="11" class="box-fill" style="fill:var(--permit-soft)" />
+        <text x="255" y="183" text-anchor="middle" font-family="var(--font-body)" font-size="10.5" font-weight="700" style="fill:var(--permit)">PERMIT</text>
+
+        <rect x="330" y="168" width="70" height="22" rx="11" style="fill:var(--forbid-soft)" />
+        <text x="365" y="183" text-anchor="middle" font-family="var(--font-body)" font-size="10.5" font-weight="700" style="fill:var(--forbid)">FORBID</text>
+
+        <line x1="250" y1="215" x2="608" y2="215" class="arm" style="color:var(--permit)" marker-end="url(#arrow2)" />
+        <text x="255" y="207" class="lbl" font-size="10" style="fill:var(--permit)">invoke</text>
+
+        <line x1="610" y1="245" x2="252" y2="245" class="arm" style="color:var(--permit)" marker-end="url(#arrow2)" />
+        <text x="255" y="237" class="lbl" font-size="10" style="fill:var(--permit)">result</text>
+
+        <line x1="250" y1="275" x2="62" y2="275" class="arm" style="color:var(--permit)" marker-end="url(#arrow2)" />
+        <text x="70" y="267" class="lbl" font-size="10" style="fill:var(--permit)">tool result</text>
+
+        <line x1="250" y1="215" x2="62" y2="330" class="arm arm-dashed" style="color:var(--forbid)" marker-end="url(#arrow2)" />
+        <text x="330" y="332" text-anchor="middle" class="lbl" font-size="10" style="fill:var(--forbid)">403 — forbidden by policy</text>
+        <text x="330" y="347" text-anchor="middle" class="lbl lbl-soft" font-size="9">Lambda is never invoked on this path</text>
+      </svg>
+    </div>
+    <figcaption>
+      <strong>Fig. 2.</strong> Authentication (the self-loop) and authorization
+      (the policy-engine round trip) are two separate hops. The forbid path
+      short-circuits straight back to the agent — the Lambda is never touched.
+    </figcaption>
+  </figure>
+
+  <p>Three things worth knowing about how the engine sees a request:</p>
+  <ul>
+    <li>
+      <strong>The principal</strong> depends on how the Gateway authenticates.
+      A <code>CUSTOM_JWT</code> Gateway gives Cedar an
+      <code>AgentCore::OAuthUser</code> built from the token's <code>sub</code>
+      claim, with every other JWT claim available as a tag
+      (<code>principal.hasTag("role")</code>, <code>principal.getTag("role")</code>).
+      An <code>AWS_IAM</code> Gateway gives an <code>AgentCore::IamEntity</code>
+      whose <code>id</code> is the caller's IAM ARN.
+    </li>
+    <li>
+      <strong>The action</strong> is one per tool, named
+      <code>&lt;targetName&gt;___&lt;toolName&gt;</code> — the same
+      double-underscore-joined name a plain <code>tools/list</code> call
+      already returns, so there's nothing new to look up.
+    </li>
+    <li>
+      <strong>The resource</strong> is the Gateway itself
+      (<code>AgentCore::Gateway::"&lt;arn&gt;"</code>), and <code>context.input</code>
+      exposes the tool call's actual arguments, so a rule can also gate on
+      <em>what</em> is being asked for, not just <em>who's</em> asking.
+    </li>
+  </ul>
+  <p>
+    Evaluation is <strong>default-deny</strong> (nothing is allowed unless a
+    rule permits it) and <strong>forbid-wins</strong> (any matching forbid
+    overrides every permit). And it isn't limited to gating <code>tools/call</code>
+    — a caller's <code>tools/list</code> response only shows the tools they're
+    actually authorized to use, so an unauthorized tool doesn't just fail
+    quietly, it doesn't appear at all.
+  </p>
+
+  <h3>Rolling it out without a surprise outage</h3>
+  <p>
+    The Gateway's link to a policy engine carries a <code>Mode</code>:
+    <code>LOG_ONLY</code> evaluates every rule and records the decision to
+    CloudWatch without blocking anything, so you can watch what your rules
+    <em>would</em> have done against real traffic before anything depends on
+    it. Flip to <code>ENFORCE</code> once that log looks right.
+  </p>
+
+  <figure>
+    <div class="diagram-frame">
+      <svg viewBox="0 0 500 130" role="img" aria-label="Flow diagram: a policy engine starts in LOG_ONLY mode, moves to ENFORCE after reviewing CloudWatch logs, and can roll back to LOG_ONLY if unexpected forbids appear.">
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+          </marker>
+        </defs>
+        <rect x="20" y="35" width="140" height="50" rx="8" class="box-fill" />
+        <text x="90" y="65" text-anchor="middle" class="lbl" font-size="12" font-weight="600">LOG_ONLY</text>
+
+        <rect x="340" y="35" width="140" height="50" rx="8" class="box-accent" />
+        <text x="410" y="65" text-anchor="middle" class="lbl" font-size="12" font-weight="600">ENFORCE</text>
+
+        <line x1="160" y1="52" x2="338" y2="52" class="arm" marker-end="url(#arrow3)" />
+        <text x="250" y="42" text-anchor="middle" class="lbl lbl-soft" font-size="9.5">logs match expectations</text>
+
+        <path d="M 340,78 C 250,110 180,110 162,80" class="arm arm-dashed" style="color:var(--forbid)" marker-end="url(#arrow3)" />
+        <text x="250" y="122" text-anchor="middle" class="lbl" font-size="9.5" style="fill:var(--forbid)">unexpected forbids appear → roll back</text>
+      </svg>
+    </div>
+    <figcaption><strong>Fig. 3.</strong> Treat the mode switch like any other risky rollout — observe before you enforce.</figcaption>
+  </figure>
+
+  <h2 id="example">05 &middot; A worked two-tool example</h2>
+  <p>
+    Say a Gateway target exposes two tools: <code>get_data</code> (read-only,
+    safe for anyone authenticated) and <code>update_data</code> (writes
+    something, and should be restricted). Three Cedar rules cover this:
+  </p>
+
+  <div class="code-label"><span class="eyebrow">Rule 1</span><span class="tag tag-permit">Permit</span></div>
+  <pre><code>permit(
+  principal is AgentCore::OAuthUser,
+  action == AgentCore::Action::"DataAPI___get_data",
+  resource == AgentCore::Gateway::"arn:aws:bedrock-agentcore:us-west-2:111122223333:gateway/data-gw"
+);</code></pre>
+  <p>Any authenticated caller can read. No conditions needed — this is the baseline.</p>
+
+  <div class="code-label"><span class="eyebrow">Rule 2</span><span class="tag tag-permit">Permit, conditional</span></div>
+  <pre><code>permit(
+  principal is AgentCore::OAuthUser,
+  action == AgentCore::Action::"DataAPI___update_data",
+  resource == AgentCore::Gateway::"arn:aws:bedrock-agentcore:us-west-2:111122223333:gateway/data-gw"
+)
+when {
+  principal.hasTag("role") &&
+  principal.getTag("role") == "editor" &&
+  context.input has reason
+};</code></pre>
+  <p>
+    Writing requires both an identity condition (the JWT's <code>role</code>
+    claim must say <code>editor</code>) and an input condition (the call must
+    include a <code>reason</code> field) — identity-based and
+    parameter-based rules compose in the same policy.
+  </p>
+
+  <div class="code-label"><span class="eyebrow">Rule 3</span><span class="tag tag-forbid">Forbid, wins regardless</span></div>
+  <pre><code>forbid(
+  principal is AgentCore::OAuthUser,
+  action == AgentCore::Action::"DataAPI___update_data",
+  resource == AgentCore::Gateway::"arn:aws:bedrock-agentcore:us-west-2:111122223333:gateway/data-gw"
+)
+when {
+  principal.hasTag("client_id") &&
+  principal.getTag("client_id") == "read-only-integration-client"
+};</code></pre>
+  <p>
+    One specific client is blocked from writing outright — even if it
+    somehow carried an <code>editor</code> role tag, forbid-wins means this
+    rule overrides rule 2 for that one caller.
+  </p>
+
+  <h2 id="pitfalls">06 &middot; Six things that will trip you up</h2>
+
+  <div class="pitfall">
+    <h3>An authorizer type change means delete-and-recreate</h3>
+    <p>The CloudFormation schema lists a Gateway's <code>AuthorizerType</code>
+    as an updatable property. The live service disagrees — an in-place
+    switch is rejected at deploy time. Budget for removing the Gateway (and
+    its targets/permissions) and recreating it fresh whenever this needs to
+    change.</p>
+  </div>
+
+  <div class="pitfall">
+    <h3>Target type and authorizer type are unrelated decisions</h3>
+    <p>Whether the Gateway calls a Lambda directly or proxies to an OpenAPI
+    backend has no bearing on who's allowed to call the Gateway in the first
+    place. Don't reach for one to fix a problem in the other.</p>
+  </div>
+
+  <div class="pitfall">
+    <h3>A non-Cognito IdP's client restriction can misbehave</h3>
+    <p>With a generic OAuth provider issuing machine-to-machine
+    (<code>client_credentials</code>) tokens, the Gateway's built-in
+    <code>AllowedClients</code> field can produce a false "insufficient scope"
+    rejection on an otherwise valid token — independent of anything in
+    <code>AllowedScopes</code>. A <code>CustomClaims</code> rule matching an
+    identity claim (like the token's <code>azp</code>) is a safer way to
+    restrict which client can call in — or, once Policy is in the picture
+    anyway, express the same restriction as a Cedar principal/tag condition
+    and skip the built-in field entirely.</p>
+  </div>
+
+  <div class="pitfall">
+    <h3>SigV4 can't be tested with a pasted header</h3>
+    <p>A bearer token is a static string you can paste into any client.
+    SigV4 is a signature computed fresh over the exact request being sent —
+    method, path, timestamp, body hash. Any tool you use to exercise an
+    <code>AWS_IAM</code> Gateway has to actually sign each request, not just
+    forward a header you copied earlier.</p>
+  </div>
+
+  <div class="pitfall">
+    <h3>Tool names in results aren't the names you wrote</h3>
+    <p>A tool declared as <code>get_data</code> in the schema shows up from
+    <code>tools/list</code> — and in Cedar's <code>action</code> — as
+    <code>&lt;targetName&gt;___get_data</code>. Match on the qualified name,
+    not the bare one, in both places.</p>
+  </div>
+
+  <div class="pitfall">
+    <h3>No policy engine means no per-tool boundary at all</h3>
+    <p>Without Policy attached, a Gateway's authorizer is a single door for
+    every tool behind it. That's a reasonable starting point for one
+    low-stakes tool. It stops being reasonable the moment a second tool has
+    a meaningfully different risk profile — plan for Policy before that
+    tool ships, not after.</p>
+  </div>
+
+  <footer>
+    Built from Amazon Bedrock AgentCore's published documentation on
+    <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html" target="_blank" rel="noopener">Gateway</a>,
+    <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/inbound-jwt-authorizer.html" target="_blank" rel="noopener">inbound JWT authorization</a>,
+    and
+    <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html" target="_blank" rel="noopener">Policy</a>,
+    cross-checked against the live <code>AWS::BedrockAgentCore::*</code>
+    CloudFormation resource schemas. All identifiers above are placeholders.
+  </footer>
+
+</div>
