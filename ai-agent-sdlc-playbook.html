@@ -1,0 +1,664 @@
+<title>Agent Onboarding Playbook</title>
+<style>
+  :root{
+    --bg:#f7f5f1;
+    --surface:#ffffff;
+    --surface-2:#f0ece3;
+    --ink:#211c17;
+    --ink-soft:#5b5347;
+    --line:#ddd5c6;
+    --accent:#8a3b2b;
+    --accent-ink:#ffffff;
+    --accent-soft:#f2e2da;
+    --good:#2f6d4f;
+    --good-soft:#e3efe7;
+    --warn:#95661a;
+    --warn-soft:#f6ecda;
+    --crit:#9b2c2c;
+    --crit-soft:#f8e2e2;
+    --code-bg:#241f1a;
+    --code-ink:#f0e8db;
+    --shadow: 0 1px 2px rgba(33,28,23,0.06), 0 6px 20px rgba(33,28,23,0.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17140f;
+      --surface:#211c16;
+      --surface-2:#282219;
+      --ink:#efe7d8;
+      --ink-soft:#b9ad98;
+      --line:#3a3226;
+      --accent:#e0805f;
+      --accent-ink:#1b120c;
+      --accent-soft:#3a271c;
+      --good:#7fcba3;
+      --good-soft:#20332a;
+      --warn:#e0b566;
+      --warn-soft:#3a2f18;
+      --crit:#e28888;
+      --crit-soft:#3a2020;
+      --code-bg:#0e0c09;
+      --code-ink:#eee3d1;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 6px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17140f;
+    --surface:#211c16;
+    --surface-2:#282219;
+    --ink:#efe7d8;
+    --ink-soft:#b9ad98;
+    --line:#3a3226;
+    --accent:#e0805f;
+    --accent-ink:#1b120c;
+    --accent-soft:#3a271c;
+    --good:#7fcba3;
+    --good-soft:#20332a;
+    --warn:#e0b566;
+    --warn-soft:#3a2f18;
+    --crit:#e28888;
+    --crit-soft:#3a2020;
+    --code-bg:#0e0c09;
+    --code-ink:#eee3d1;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 6px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    line-height: 1.55;
+    padding-inline: 20px;
+    padding-block: 40px;
+    max-width: 100%;
+  }
+  .wrap{ max-width: 880px; margin: 0 auto; }
+  h1,h2,h3,h4{ font-family:'Fraunces', Georgia, serif; font-weight: 600; text-wrap: balance; color: var(--ink); }
+  .mono, code, .badge, .kicker, th, .step-num, .lvl-badge, .tag{
+    font-family: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  }
+
+  /* ---------- Header ---------- */
+  header.hero{
+    padding-block: 8px 32px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 40px;
+  }
+  .kicker{
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1.title{
+    font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.08;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  .dek{
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 640px;
+    margin: 0 0 18px;
+  }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft);
+  }
+  .meta-row span{
+    border:1px solid var(--line); border-radius:100px; padding:5px 12px;
+    background: var(--surface);
+  }
+
+  /* ---------- TOC ---------- */
+  nav.toc{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 44px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2{ font-size:13px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin:0 0 10px; font-family:'IBM Plex Mono',monospace; font-weight:600;}
+  nav.toc ol{ columns: 2; column-gap: 24px; margin:0; padding-left: 20px; font-size:14px;}
+  nav.toc li{ margin-bottom:6px; }
+  nav.toc a{ color: var(--ink); text-decoration:none; border-bottom: 1px solid transparent; }
+  nav.toc a:hover{ border-bottom-color: var(--accent); color: var(--accent); }
+  @media (max-width: 560px){ nav.toc ol{ columns: 1; } }
+
+  section{ margin-bottom: 56px; scroll-margin-top: 16px; }
+  .section-head{ display:flex; align-items:baseline; gap:14px; margin-bottom: 18px; }
+  .section-num{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; color: var(--accent-ink);
+    background: var(--accent); border-radius: 6px; padding: 3px 9px; font-weight:600; flex-shrink:0;
+  }
+  h2.section-title{ font-size: clamp(22px,3.4vw,28px); margin:0; }
+  p{ margin: 0 0 14px; }
+  .lede{ font-size: 16px; color: var(--ink-soft); max-width: 680px; }
+
+  ul.plain, ol.plain{ padding-left: 22px; margin: 0 0 14px; }
+  ul.plain li, ol.plain li{ margin-bottom: 8px; }
+
+  a.inline{ color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+
+  /* ---------- callouts ---------- */
+  .callout{
+    border-radius: 12px; padding: 16px 18px; margin: 18px 0; border: 1px solid var(--line);
+    font-size: 14.5px;
+  }
+  .callout.good{ background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 35%, var(--line)); }
+  .callout.warn{ background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+  .callout.crit{ background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 35%, var(--line)); }
+  .callout .lbl{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:6px; }
+  .callout.good .lbl{ color: var(--good); }
+  .callout.warn .lbl{ color: var(--warn); }
+  .callout.crit .lbl{ color: var(--crit); }
+
+  /* ---------- checklist ---------- */
+  .checklist{ display:flex; flex-direction:column; gap:10px; margin: 16px 0; }
+  .check-item{
+    display:flex; gap:12px; align-items:flex-start;
+    background: var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 14px;
+  }
+  .check-item .box{
+    width:18px; height:18px; border-radius:4px; border:2px solid var(--accent); flex-shrink:0; margin-top:2px;
+  }
+  .check-item .body b{ display:block; margin-bottom:2px; font-size:14.5px; }
+  .check-item .body span{ color: var(--ink-soft); font-size:13.5px; }
+
+  /* ---------- phases (steps) ---------- */
+  .phase{
+    display:grid; grid-template-columns: 56px 1fr; gap: 18px;
+    padding: 20px 0; border-top: 1px solid var(--line);
+  }
+  .phase:first-of-type{ border-top: 2px solid var(--ink); }
+  .step-num{
+    width:44px; height:44px; border-radius:50%; background: var(--surface-2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color: var(--accent);
+  }
+  .phase h3{ font-size:18px; margin: 4px 0 6px; }
+  .phase .sub{ font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color: var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;}
+  .phase p{ font-size:15px; }
+  .phase .gate{
+    margin-top: 10px; display:inline-flex; gap:8px; align-items:center;
+    background: var(--accent-soft); color: var(--accent); border-radius: 8px; padding: 6px 10px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+  }
+
+  /* ---------- code blocks ---------- */
+  pre{
+    background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 16px 18px;
+    overflow-x: auto; font-size: 13px; line-height:1.6; margin: 12px 0 18px;
+  }
+  pre code{ font-family:'IBM Plex Mono', monospace; }
+  .file-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color: var(--ink-soft);
+    margin-bottom: -6px; display:block;
+  }
+
+  /* ---------- tabs (stacks) ---------- */
+  .tabs{ display:flex; gap:8px; margin-bottom: 14px; flex-wrap:wrap; }
+  .tab-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:8px 14px; border-radius:8px;
+    border:1px solid var(--line); background: var(--surface); color: var(--ink-soft); cursor:pointer;
+  }
+  .tab-btn[aria-selected="true"]{ background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* ---------- comparison table ---------- */
+  .table-scroll{ overflow-x:auto; border-radius: 12px; border:1px solid var(--line); }
+  table{ width:100%; border-collapse: collapse; font-size: 13.5px; background: var(--surface); min-width: 640px; }
+  th, td{ text-align:left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align:top; }
+  thead th{ background: var(--surface-2); font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); font-weight:600; }
+  tbody tr:last-child td{ border-bottom:none; }
+  td.rowhead{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px; white-space:nowrap; }
+
+  /* ---------- maturity ladder ---------- */
+  .ladder{ display:flex; flex-direction:column; gap:0; border-radius: 12px; overflow:hidden; border:1px solid var(--line); }
+  .rung{
+    display:grid; grid-template-columns: 90px 1fr; gap:16px; padding: 16px 18px;
+    border-bottom: 1px solid var(--line); background: var(--surface);
+  }
+  .rung:last-child{ border-bottom:none; }
+  .rung:nth-child(odd){ background: var(--surface-2); }
+  .lvl-badge{
+    font-size: 13px; font-weight:700; color: var(--accent);
+    display:flex; align-items:center; gap:6px;
+  }
+  .rung h4{ font-size:15px; margin:0 0 4px; }
+  .rung p{ font-size:13.5px; margin:0; color: var(--ink-soft); }
+
+  /* ---------- pitfalls ---------- */
+  .pitfall-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:14px; }
+  .pitfall{ background: var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .pitfall .tag{ font-size:11px; color: var(--crit); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;}
+  .pitfall h4{ font-size:14.5px; margin:0 0 6px; }
+  .pitfall p{ font-size:13.5px; color: var(--ink-soft); margin:0; }
+
+  /* ---------- registry section ---------- */
+  .tree{
+    background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 16px 18px;
+    overflow-x: auto; font-size: 12.5px; line-height:1.7; margin: 12px 0 18px;
+    font-family:'IBM Plex Mono', monospace; white-space: pre;
+  }
+  .mermaid-wrap{
+    background: var(--surface); border:1px solid var(--line); border-radius: 12px;
+    padding: 18px; margin: 14px 0 20px; overflow-x: auto; box-shadow: var(--shadow);
+  }
+  .mermaid-wrap pre.mermaid{
+    background: transparent; color: inherit; padding: 0; margin: 0; overflow: visible;
+    font-size: 14px; min-height: 40px;
+  }
+  .mermaid-wrap pre.mermaid svg{ max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .role-grid{ display:flex; flex-direction:column; gap:10px; margin: 14px 0; }
+  .role{
+    display:grid; grid-template-columns: 160px 1fr; gap: 14px;
+    background: var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 14px;
+  }
+  .role .who{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px; color: var(--accent); }
+  .role .what{ font-size: 13.5px; color: var(--ink-soft); }
+  @media (max-width: 560px){ .role{ grid-template-columns: 1fr; } }
+
+  footer{
+    border-top: 2px solid var(--ink); padding-top: 20px; margin-top: 60px;
+    font-size: 12.5px; color: var(--ink-soft); font-family:'IBM Plex Mono',monospace;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 560px){
+    .phase{ grid-template-columns: 40px 1fr; gap:12px; }
+    .step-num{ width:34px; height:34px; font-size:13px; }
+    .rung{ grid-template-columns: 1fr; }
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Enterprise SDLC · Agent Enablement</div>
+  <h1 class="title">Bringing AI Coding Agents Into a Repo You Already Trust</h1>
+  <p class="dek">A staged rollout for adding Claude, Copilot, Codex and similar agents to existing enterprise GitHub repositories — starting with bug fixes and small features, using CLAUDE.md-style context, skills, plugins and hooks, with humans holding every decision that matters and cost kept on a leash.</p>
+  <div class="meta-row">
+    <span>Java · Spring</span>
+    <span>TypeScript · Node.js</span>
+    <span>Python</span>
+    <span>Claude Code</span>
+    <span>GitHub Copilot</span>
+    <span>OpenAI Codex</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#framing">Why staged, not "big bang"</a></li>
+    <li><a href="#preflight">Pre-flight repo checklist</a></li>
+    <li><a href="#rollout">The rollout: seven phases</a></li>
+    <li><a href="#stacks">Stack-specific onboarding</a></li>
+    <li><a href="#tools">Claude, Copilot &amp; Codex compared</a></li>
+    <li><a href="#registry">Enterprise skills &amp; plugins registry</a></li>
+    <li><a href="#governance">Human-in-the-loop &amp; governance</a></li>
+    <li><a href="#cost">Token usage &amp; cost control</a></li>
+    <li><a href="#maturity">Maturity ladder</a></li>
+    <li><a href="#pitfalls">Common pitfalls</a></li>
+  </ol>
+</nav>
+
+<section id="framing">
+  <div class="section-head"><span class="section-num">01</span><h2 class="section-title">Why staged, not "big bang"</h2></div>
+  <p class="lede">Enterprise repos already carry review gates, CI, and institutional knowledge that live in people's heads, not in the code. An agent dropped in without that context will write code that compiles and still gets rejected — wrong logging convention, wrong exception pattern, wrong test double. The fix isn't a smarter model; it's an onboarding sequence, the same one you'd use for a new engineer, compressed into files an agent reads before it writes.</p>
+  <p>The model that works in practice is a trust ladder: <b>read-only exploration</b> → <b>suggested diffs a human applies</b> → <b>agent-opened PRs on a narrow task class</b> → <b>broader autonomy with spend and merge gates</b>. Every phase below maps to a rung on that ladder, and every rung is earned by evidence (PR acceptance rate, defect rate, cost per merged PR), not by calendar time.</p>
+  <div class="callout good">
+    <span class="lbl">Starting task class</span>
+    Constrain the pilot to two categories only: <b>well-reproduced bug fixes</b> (a failing test or clear repro exists) and <b>small, additive features</b> (new endpoint, new field, new component) with an existing pattern to copy. Both have a cheap, objective "did it work" signal — a test passes, a build succeeds — which is exactly what makes them safe to automate first.
+  </div>
+</section>
+
+<section id="preflight">
+  <div class="section-head"><span class="section-num">02</span><h2 class="section-title">Pre-flight repo checklist</h2></div>
+  <p class="lede">None of this is agent-specific — it's the baseline that makes autonomous PRs from anyone, human or agent, safe to merge. If any of these are missing, fix them before onboarding an agent, not after.</p>
+  <div class="checklist">
+    <div class="check-item"><div class="box"></div><div class="body"><b>Branch protection on default branch</b><span>No direct pushes; required status checks; required review count ≥ 1 for agent-authored PRs even if humans can self-merge elsewhere.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>CI actually gates merge</b><span>Lint, type-check, unit tests, and (ideally) an integration smoke test all run and block merge on failure — this is the agent's primary feedback loop.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Meaningful test coverage on the pilot area</b><span>An agent fixing a bug without a regression test to anchor to will "fix" the symptom, not the cause. Backfill tests in the pilot module first if needed.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Secrets are out of the repo and out of reach</b><span>No secrets in env files an agent might read; secret scanning enabled; agent's GitHub token/PAT scoped to the pilot repo only, not org-wide.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>CODEOWNERS on the pilot paths</b><span>Ensures agent PRs route to a reviewer who actually knows the module, not whoever is next in a round-robin.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>A place for the agent-context file to live</b><span>Confirm nothing already claims <code>CLAUDE.md</code>/<code>AGENTS.md</code> at repo root for an unrelated purpose.</span></div></div>
+  </div>
+</section>
+
+<section id="rollout">
+  <div class="section-head"><span class="section-num">03</span><h2 class="section-title">The rollout: seven phases</h2></div>
+  <p class="lede">Each phase produces a concrete artifact in the repo. None of it is theoretical — by the end of Phase 3 an agent working cold on the repo should read almost the way a well-onboarded contractor would.</p>
+
+  <div class="phase" id="phase-0">
+    <div class="step-num">0</div>
+    <div>
+      <div class="sub">Scope the pilot</div>
+      <h3>Pick one repo, one task class, one owner</h3>
+      <p>Choose a repo with decent tests and a low-blast-radius module — not the billing engine. Name a single engineer as the rollout owner who reviews every agent PR for the first two weeks. Write down the task class explicitly (e.g. "bugs with a linked failing test in the <code>orders-api</code> module") so scope creep is visible when it happens.</p>
+      <span class="gate">Exit gate → written scope + owner assigned</span>
+    </div>
+  </div>
+
+  <div class="phase" id="phase-1">
+    <div class="step-num">1</div>
+    <div>
+      <div class="sub">Repo context file</div>
+      <h3>Write the CLAUDE.md / AGENTS.md</h3>
+      <p>This is the single highest-leverage artifact in the whole rollout. It's a markdown file at repo root that every agent reads before touching code: what the service does, the architecture in five sentences, the coding style the team actually enforces (not the aspirational one), the exact commands to build/test/lint, and an explicit do/don't list. Treat it like onboarding docs for a new hire — because that's what it is.</p>
+      <span class="file-tag">CLAUDE.md — excerpt</span>
+      <pre><code># Orders API
+
+Spring Boot 3 service owning order lifecycle. Talks to `inventory-svc` via gRPC,
+publishes `OrderPlaced`/`OrderCancelled` events to Kafka.
+
+## Build &amp; test
+- `./gradlew build` — full build, must pass before any PR
+- `./gradlew test --tests "*OrderServiceTest"` — fast loop for order logic
+- Never run `./gradlew publish` — that's a release step, human-only
+
+## Conventions
+- Controllers stay thin: validation + delegate to a `*Service`, no business logic
+- All service methods that touch money return `Result&lt;T, OrderError&gt;`, never throw
+  for expected failure paths (see `OrderError.java`)
+- New endpoints: copy the pattern in `CancelOrderController`, not `LegacyRefundController`
+  (the latter is deprecated, do not imitate it)
+
+## Do not
+- Do not modify anything under `src/main/java/.../legacy/` — frozen, migration in flight
+- Do not add new Kafka topics without a human decision (infra cost + ownership)
+</code></pre>
+      <span class="gate">Exit gate → agent's first three suggested diffs match team style without correction</span>
+    </div>
+  </div>
+
+  <div class="phase" id="phase-2">
+    <div class="step-num">2</div>
+    <div>
+      <div class="sub">Skills</div>
+      <h3>Encode institutional patterns as reusable skills</h3>
+      <p>CLAUDE.md tells the agent about the repo; skills tell it <i>how your team does a recurring kind of task</i>, in enough detail to reuse without re-deriving it each time. A skill is a short instruction file (plus optional scripts/templates) triggered by task type: "add a REST endpoint," "add a DB migration," "write a component with our design system." This is where design patterns and code-review norms actually stick, because the agent reads the playbook instead of pattern-matching on whatever code happens to be nearby.</p>
+      <span class="file-tag">.claude/skills/add-rest-endpoint/SKILL.md — excerpt</span>
+      <pre><code>---
+name: add-rest-endpoint
+description: Use when adding a new REST endpoint to a Spring controller in this repo
+---
+1. Add the method to the relevant `*Controller`, thin — delegate to `*Service`
+2. Validate input with a `@Valid` request DTO in `dto/request/`, never raw Map
+3. Service layer returns `Result&lt;T, DomainError&gt;`; map errors to HTTP status in
+   the controller's `@ExceptionHandler`, matching the table in `ERROR_MAPPING.md`
+4. Add an OpenAPI annotation matching existing endpoints in the same controller
+5. Write a `@WebMvcTest` for the endpoint before opening a PR — CI will reject
+   endpoint PRs with no test targeting the new path
+</code></pre>
+      <span class="gate">Exit gate → 2–3 skills covering the pilot task class's most common shapes</span>
+    </div>
+  </div>
+
+  <div class="phase" id="phase-3">
+    <div class="step-num">3</div>
+    <div>
+      <div class="sub">Plugins &amp; connectors</div>
+      <h3>Give the agent the same tools a human contributor has</h3>
+      <p>A human fixing a bug checks the ticket, greps internal docs, and maybe pings someone on Slack. An MCP connector or plugin gives the agent the equivalent: read access to the issue tracker (Jira/Linear) so it can pull the actual bug report, a docs connector for internal architecture pages, and a package-registry connector if internal packages aren't on public npm/PyPI/Maven. Scope every connector to read-only where the agent doesn't need to write, and to the specific project/space where it does.</p>
+      <span class="gate">Exit gate → agent can resolve a ticket reference to full context without being pasted the ticket manually</span>
+    </div>
+  </div>
+
+  <div class="phase" id="phase-4">
+    <div class="step-num">4</div>
+    <div>
+      <div class="sub">Hooks</div>
+      <h3>Turn tribal safety rules into enforced ones</h3>
+      <p>Hooks run deterministic checks around agent actions — before a commit, before a push, before a tool call completes. They convert "please remember to..." into something that actually blocks. Three worth having from day one: a pre-commit hook that runs lint + fast tests before any commit is created, a pre-push hook that refuses a push if the target is a protected branch, and a PR-open hook that enforces the PR template (linked issue, test evidence, a "generated by agent" label).</p>
+      <span class="file-tag">.claude/hooks — conceptual</span>
+      <pre><code>PreToolUse(Bash: git push)  → reject if branch in [main, release/*]
+PostToolUse(Edit/Write)     → run linter on changed files, surface failures inline
+PreToolUse(git commit)      → block if fast test suite fails
+</code></pre>
+      <span class="gate">Exit gate → at least one real incident where a hook caught something a human would have caught in review, before review</span>
+    </div>
+  </div>
+
+  <div class="phase" id="phase-5">
+    <div class="step-num">5</div>
+    <div>
+      <div class="sub">Human-in-the-loop gates</div>
+      <h3>Decide, in writing, what a human must approve</h3>
+      <p>Not every decision needs a human, but some always do. Write the list down rather than relying on judgment call each time: merge approval always human; anything touching auth, payments, data deletion, or schema migrations always human, regardless of size; any PR the agent flags as low-confidence routes to a human before CI even runs, to avoid burning cycles on a doomed approach.</p>
+      <span class="gate">Exit gate → escalation list reviewed by eng lead + security, not just the rollout owner</span>
+    </div>
+  </div>
+
+  <div class="phase" id="phase-6">
+    <div class="step-num">6</div>
+    <div>
+      <div class="sub">Expand scope</div>
+      <h3>Widen the task class only when metrics say so</h3>
+      <p>Move from bug fixes to small features, then from one repo to a second, then relax review intensity — each step gated on the same numbers: PR acceptance rate without major rework, defect escape rate post-merge, and cost per merged PR holding flat or falling. If any metric regresses when scope widens, roll the scope back one notch before debugging why, then widen again once fixed.</p>
+      <span class="gate">Exit gate → two consecutive weeks of stable metrics at the new scope</span>
+    </div>
+  </div>
+</section>
+
+<section id="stacks">
+  <div class="section-head"><span class="section-num">04</span><h2 class="section-title">Stack-specific onboarding</h2></div>
+  <p class="lede">The phases above are stack-agnostic; the content inside CLAUDE.md and your skills isn't. Three starting points below — swap in your team's real conventions, these are illustrative shapes, not templates to copy verbatim.</p>
+
+  <div class="tabs" role="tablist" aria-label="Stack examples">
+    <button class="tab-btn" role="tab" aria-selected="true" data-tab="java">Java / Spring</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="ts">TypeScript / Node</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="py">Python</button>
+  </div>
+
+  <div class="tab-panel active" data-panel="java">
+    <p><b>CLAUDE.md should state:</b> the Spring profile structure (dev/test/prod), whether the team uses constructor injection exclusively (say so — agents default to field injection otherwise), the exception-handling convention (checked vs. unchecked, `Result`-style wrappers vs. exceptions), and the test stack (JUnit 5 + Mockito vs. Testcontainers for integration).</p>
+    <p><b>High-value skills:</b> "add a JPA entity + repository + migration," "add a REST endpoint" (as above), "add a scheduled/async job following our `@Async` + retry pattern."</p>
+    <p><b>Common correction needed early:</b> agents default to `@Autowired` field injection and generic `RuntimeException` — call both out explicitly as "don't" items if the team avoids them.</p>
+  </div>
+  <div class="tab-panel" data-panel="ts">
+    <p><b>CLAUDE.md should state:</b> module system (ESM vs CommonJS), the state-management or data-fetching convention on the frontend, whether the backend uses a framework's DI or plain function composition, and the exact test runner + how mocks are structured (this varies wildly team to team).</p>
+    <p><b>High-value skills:</b> "add an API route + Zod/validation schema + test," "add a React component matching our design system" (point at a real reference component, not a description), "add a DB migration with our ORM."</p>
+    <p><b>Common correction needed early:</b> agents mix `any` back in under type pressure, and default to whatever data-fetching pattern is most common in public training data rather than the team's actual one (e.g. React Query vs. hand-rolled hooks) — pin this explicitly.</p>
+  </div>
+  <div class="tab-panel" data-panel="py">
+    <p><b>CLAUDE.md should state:</b> dependency manager in use (poetry/uv/pip-tools), whether the codebase is typed (mypy/pyright strict or not) and how strictly enforced, the web framework's error-handling convention, and async vs. sync boundaries if the codebase mixes both.</p>
+    <p><b>High-value skills:</b> "add an endpoint + pydantic schema + test," "add a Celery/background task following our retry/idempotency pattern," "add a DB migration with Alembic."</p>
+    <p><b>Common correction needed early:</b> agents silently drop type hints under refactor pressure, and reach for `except Exception` broadly unless the team's narrower exception convention is written down.</p>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="section-head"><span class="section-num">05</span><h2 class="section-title">Claude, Copilot &amp; Codex compared</h2></div>
+  <p class="lede">All three support the phases above; the primitives they call it by differ. Pick one to start the pilot rather than running all three at once — the failure mode of parallel tools is diffuse ownership, not insight.</p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Capability</th><th>Claude Code</th><th>GitHub Copilot</th><th>OpenAI Codex</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="rowhead">Repo context file</td><td><code>CLAUDE.md</code>, read automatically at session start</td><td>Custom instructions files (repo &amp; path-scoped)</td><td><code>AGENTS.md</code>, read automatically</td></tr>
+        <tr><td class="rowhead">Reusable playbooks</td><td>Skills — named, triggerable, versionable in-repo</td><td>Reusable prompts / custom chat modes</td><td>Prompt files &amp; project-level instructions</td></tr>
+        <tr><td class="rowhead">External tool access</td><td>MCP connectors + plugins</td><td>MCP support in agent mode; GitHub-native tool access</td><td>Function/tool calling; MCP support</td></tr>
+        <tr><td class="rowhead">Deterministic guardrails</td><td>Hooks (pre/post tool-use, commit, push)</td><td>Org policies, branch protection, required workflows</td><td>Sandbox execution policies, approval modes</td></tr>
+        <tr><td class="rowhead">Autonomous PR flow</td><td>CLI/SDK-driven; opens PRs via git + gh</td><td>Copilot coding agent — assign an issue, get a PR</td><td>Codex cloud agent — task in, PR out</td></tr>
+        <tr><td class="rowhead">Where it fits best</td><td>Deep repo-specific workflows, custom hooks, terminal-native teams</td><td>Teams already on GitHub-native workflow, issue-driven work</td><td>Sandboxed, task-queue style delegation</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13px;color:var(--ink-soft);margin-top:10px;">Feature names and boundaries move quickly across all three vendors — verify current specifics against each vendor's docs before writing them into policy.</p>
+</section>
+
+<section id="registry">
+  <div class="section-head"><span class="section-num">06</span><h2 class="section-title">Enterprise skills &amp; plugins registry</h2></div>
+  <p class="lede">Once two or three teams have each built their own "add a REST endpoint" skill, the per-repo model in Phases 1-4 starts duplicating work and drifting into inconsistent agent behavior across LOBs. The fix: a single central Git repo of skills/plugins, owned by an AI Enablement team, that any domain repo can pull from and any team can contribute to.</p>
+
+  <span class="file-tag">central-agent-registry/ — layout</span>
+  <div class="tree">central-agent-registry/
+├── shared/skills/           # cross-domain: PR hygiene, test-writing, commit style
+├── domains/
+│   ├── payments/skills/      # LOB-specific: reconciliation, ledger patterns
+│   ├── claims/skills/
+│   └── platform/skills/
+├── plugins/                  # bundled skill+hook+MCP-connector packages
+├── REGISTRY.md                # index: name → domain → owner → version
+└── CODEOWNERS                 # AI Enablement owns root; domain leads own their folder</div>
+
+  <div class="callout good">
+    <span class="lbl">Why central</span>
+    One reviewed, versioned "add a REST endpoint" skill instead of five slightly-different ones. Security/quality review happens once, centrally — not once per team, per repo.
+  </div>
+
+  <h3 style="font-size:16px;margin:24px 0 4px;">Contribution flow — a team publishes a skill</h3>
+  <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    A[Domain team finds\na reusable pattern] --> B[Author skill/plugin\nin a feature branch]
+    B --> C[Open PR to\ncentral registry]
+    C --> D{AI Enablement\nreview}
+    D -- changes requested --> B
+    D -- approved --> E[Merge to main]
+    E --> F[Tag semver release]
+    F --> G[Publish to\nREGISTRY.md index]
+</pre>
+  </div>
+
+  <h3 style="font-size:16px;margin:24px 0 4px;">Consumption flow — a team's repo uses it</h3>
+  <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    A[Team repo pins registry\nversion in manifest] --> B[Agent session starts\nin team's repo]
+    B --> C[Skill/plugin pulled\nfrom central registry]
+    C --> D[Agent applies skill\nduring the task]
+    D --> E[Usage signal logged\n- optional telemetry]
+    E --> F[AI Enablement sees\nadoption metrics]
+</pre>
+  </div>
+
+  <div class="role-grid">
+    <div class="role"><div class="who">AI Enablement</div><div class="what">Owns the repo, reviews every PR for quality/security/naming, cuts versioned releases, deprecates stale skills.</div></div>
+    <div class="role"><div class="who">Domain / LOB teams</div><div class="what">Consume shared + their own domain skills; contribute new ones back via PR when they build something reusable.</div></div>
+    <div class="role"><div class="who">Security &amp; Compliance</div><div class="what">Spot-reviews sensitive categories (data access, payments, PII-handling skills) before release.</div></div>
+  </div>
+
+  <ul class="plain">
+    <li><b>Versioning:</b> semver tags on the registry; consuming repos pin a version, not <code>main</code> — no surprise behavior change mid-sprint.</li>
+    <li><b>Consumption mechanism:</b> git submodule, package manifest reference, or a plugin-marketplace entry pinned to a tag — whichever your agent tooling supports for installing plugins at session start.</li>
+    <li><b>Deprecation:</b> mark a skill deprecated in <code>REGISTRY.md</code> with a replacement pointer; give consumers one release cycle before removal.</li>
+  </ul>
+</section>
+
+<section id="governance">
+  <div class="section-head"><span class="section-num">07</span><h2 class="section-title">Human-in-the-loop &amp; governance</h2></div>
+  <p class="lede">The goal isn't to slow the agent down everywhere — it's to make sure the handful of decisions that matter always cross a human, while everything else flows.</p>
+  <ul class="plain">
+    <li><b>Label everything agent-authored.</b> A PR label (<code>agent-authored</code>) plus a footer noting the model/tool used — makes audit trivial later and lets reviewers calibrate scrutiny.</li>
+    <li><b>Merge is always a human action.</b> Even at high trust levels, the merge button is a person's, not the agent's — auto-merge-on-green is a policy choice to make explicitly, not a default to fall into.</li>
+    <li><b>Named review owner per pilot, not a queue.</b> Diffuse review responsibility is how low-quality agent PRs slip through — someone specific is accountable for the first weeks.</li>
+    <li><b>Escalation path for uncertainty.</b> The agent should have an explicit "I'm not confident, flagging for human input" path rather than guessing past a threshold — reward this behavior, don't penalize it as a failure to complete the task.</li>
+    <li><b>Audit trail.</b> Keep the agent's plan/reasoning artifact (session log, PR description) attached to the PR — when something goes wrong six weeks later, "what did it think it was doing" needs an answer.</li>
+  </ul>
+</section>
+
+<section id="cost">
+  <div class="section-head"><span class="section-num">08</span><h2 class="section-title">Token usage &amp; cost control</h2></div>
+  <p class="lede">Cost discipline is a design constraint from day one, not a dashboard you check after the bill arrives.</p>
+  <div class="checklist">
+    <div class="check-item"><div class="box"></div><div class="body"><b>Set a per-task budget, not just a monthly cap</b><span>A single runaway task (agent loops on a failing test, keeps retrying) should hit a hard stop — token or turn count — well before it becomes a monthly-bill problem.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Tier models to the task</b><span>Use a smaller/cheaper model for triage — "is this bug report reproducible, what file is it likely in" — and reserve the strongest model for the actual fix generation and verification.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Keep CLAUDE.md and skills lean</b><span>Every session reloads this context; a bloated file is a recurring tax on every task. Prompt caching helps with repeat cost, but the leanest fix is not writing padding into the file in the first place.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Bound tool-call loops</b><span>Cap retries on a failing test or lint fix — after N attempts, escalate to a human instead of continuing to spend on the same wall.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Track cost per merged PR, not just cost per run</b><span>A cheap run that never produces a mergeable PR is a worse ratio than an expensive run that does. Watch the ratio, not either number alone.</span></div></div>
+    <div class="check-item"><div class="box"></div><div class="body"><b>Alert on spend anomalies</b><span>A spend spike is often the first visible symptom of a looping agent or a runaway task — wire an alert before it's a line item someone asks about a month later.</span></div></div>
+  </div>
+</section>
+
+<section id="maturity">
+  <div class="section-head"><span class="section-num">09</span><h2 class="section-title">Rollout maturity ladder</h2></div>
+  <p class="lede">A shared scorecard for where a given repo actually sits — useful for a status update to engineering leadership without re-litigating the whole plan each time.</p>
+  <div class="ladder">
+    <div class="rung"><div class="lvl-badge">L0</div><div><h4>No agents</h4><p>Manual development only. No context files, no pilot scoped.</p></div></div>
+    <div class="rung"><div class="lvl-badge">L1</div><div><h4>Read-only / suggestion</h4><p>CLAUDE.md exists; agent suggests diffs a human applies manually. No agent-opened PRs yet.</p></div></div>
+    <div class="rung"><div class="lvl-badge">L2</div><div><h4>Narrow autonomous PRs</h4><p>Agent opens PRs for the pilot task class only (reproduced bugs, small additive features); every PR human-reviewed and human-merged; hooks enforce lint/test/branch rules.</p></div></div>
+    <div class="rung"><div class="lvl-badge">L3</div><div><h4>Broader task class, metrics-gated</h4><p>Small features beyond the pilot module; skills cover most common shapes; cost-per-merged-PR tracked and stable; escalation path exercised, not just documented.</p></div></div>
+    <div class="rung"><div class="lvl-badge">L4</div><div><h4>Multi-repo, standing practice</h4><p>Pattern replicated across repos with repo-specific CLAUDE.md/skills; governance policy (labels, merge rules, spend alerts) is org-standard, not pilot-specific.</p></div></div>
+  </div>
+</section>
+
+<section id="pitfalls">
+  <div class="section-head"><span class="section-num">10</span><h2 class="section-title">Common pitfalls</h2></div>
+  <div class="pitfall-grid">
+    <div class="pitfall"><span class="tag">Scope</span><h4>Widening the task class too fast</h4><p>One good week of bug-fix PRs isn't evidence the agent is ready for open-ended feature work — gate on the metrics in Phase 6, not enthusiasm.</p></div>
+    <div class="pitfall"><span class="tag">Guardrails</span><h4>Treating tests as optional context</h4><p>An agent without a failing test to anchor to will "fix" whatever it guesses is wrong. No repro, no test, no autonomous PR.</p></div>
+    <div class="pitfall"><span class="tag">Security</span><h4>Overscoped credentials</h4><p>An org-wide PAT or write access to unrelated repos turns a contained pilot into an org-wide blast radius if anything goes sideways.</p></div>
+    <div class="pitfall"><span class="tag">Cost</span><h4>No loop or retry ceiling</h4><p>A stuck agent retrying the same failing approach is the single most common source of surprise spend — cap it structurally, not by watching a dashboard.</p></div>
+    <div class="pitfall"><span class="tag">Process</span><h4>No rollback plan</h4><p>Know in advance how to pause the pilot (revoke the token, disable the workflow) without a scramble — write it down before you need it, not during an incident.</p></div>
+    <div class="pitfall"><span class="tag">Context</span><h4>Stale CLAUDE.md</h4><p>A context file that isn't updated when conventions change becomes actively misleading — assign it an owner the same way you'd own a README.</p></div>
+  </div>
+</section>
+
+<footer>
+  <span>Playbook · Agent Enablement</span>
+  <span>Review cadence: revisit after each maturity-ladder transition</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  try{
+    var buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var target = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(function(b){ b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p){
+          p.classList.toggle('active', p.getAttribute('data-panel') === target);
+        });
+      });
+    });
+  }catch(e){}
+})();
+
+/* Fallback Mermaid renderer — only kicks in when nothing has already
+   rendered the diagrams (e.g. the file opened directly in a browser
+   or on GitHub, rather than inside the Claude Artifact viewer, which
+   renders mermaid natively without needing this). */
+(function(){
+  function unrendered(){
+    return Array.prototype.filter.call(
+      document.querySelectorAll('pre.mermaid'),
+      function(pre){ return !pre.querySelector('svg'); }
+    );
+  }
+  function renderWithMermaid(pres){
+    try{
+      var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      window.mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'default', securityLevel: 'loose' });
+      window.mermaid.run({ nodes: pres });
+    }catch(e){}
+  }
+  function loadMermaid(pres){
+    if(!pres.length) return;
+    if(window.mermaid){ renderWithMermaid(pres); return; }
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js';
+    script.onload = function(){ renderWithMermaid(pres); };
+    script.onerror = function(){};
+    document.head.appendChild(script);
+  }
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      try{ loadMermaid(unrendered()); }catch(e){}
+    }, 600);
+  });
+})();
+</script>
