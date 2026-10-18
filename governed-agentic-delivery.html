@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Governed Agentic Delivery</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column, each section = eyebrow + one-line lead + a diagram that carries the argument.
+   Colour is semantic: amber = human decision point, neutral = machine work, green/red = outcome. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#17202a; --muted:#596574;
+  --line:#c8cfd8; --line-strong:#8693a3;
+  --human:#a85d0c; --human-tint:#fbeedb;
+  --good:#2f8a5a; --good-tint:#e4f3ea; --bad:#b8433a; --bad-tint:#f9e5e2;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1419; --surface:#161d25; --fg:#e5e9ee; --muted:#9aa5b2;
+  --line:#2d3844; --line-strong:#6d7a8a;
+  --human:#f0a64a; --human-tint:#33250f;
+  --good:#5fbf88; --good-tint:#13291d; --bad:#e27b70; --bad-tint:#331816;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#161d25; --fg:#e5e9ee; --muted:#9aa5b2;
+  --line:#2d3844; --line-strong:#6d7a8a;
+  --human:#f0a64a; --human-tint:#33250f;
+  --good:#5fbf88; --good-tint:#13291d; --bad:#e27b70; --bad-tint:#331816;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+main{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(30px,5vw,42px);line-height:1.1}
+h2{font-size:24px;line-height:1.2}
+p{margin:0;max-width:66ch}
+.eyebrow{font:500 11.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:14px}
+.lead{color:var(--muted)}
+header{display:flex;flex-direction:column;gap:16px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:14px;height:10px;border-radius:2px;border:1.5px solid var(--line-strong);background:var(--surface)}
+.sw.h{border-color:var(--human);background:var(--human-tint)}
+.moves{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+.moves div{background:var(--surface);padding:14px 16px;min-width:0}
+.moves b{display:block;font:600 14px/1.3 var(--sans);margin-bottom:4px}
+.moves small{font-size:12.5px;color:var(--muted);line-height:1.4;display:block}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:620px;height:auto}
+svg text{font-family:var(--sans)}
+.bx{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.25}
+.hm{fill:var(--human-tint);stroke:var(--human);stroke-width:2}
+.gd{fill:var(--good-tint);stroke:var(--good);stroke-width:1.5}
+.bd{fill:var(--bad-tint);stroke:var(--bad);stroke-width:1.5}
+.band{fill:var(--bg);stroke:var(--line);stroke-width:1.25}
+.ln{fill:none;stroke:var(--line-strong);stroke-width:1.25}
+.dash{stroke-dasharray:4 4}
+.ah{fill:var(--line-strong)}
+.gate{fill:var(--human);stroke:var(--human)}
+.t{fill:var(--fg);font-size:13px}
+.tn{fill:var(--fg);font-size:13px;font-weight:600}
+.tq{fill:var(--muted);font-size:11.5px}
+.th{fill:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.mid{text-anchor:middle}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font:500 12.5px/1 var(--mono);padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)}
+.grid3,.grid4{display:grid;gap:12px}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.card h3{margin:0;font:600 14px/1.3 var(--sans)}
+.card .k{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--human)}
+.card ul{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.card p{font-size:13px;color:var(--muted)}
+.swap{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.swap>div{padding:10px 16px;font-size:13.5px;border-top:1px solid var(--line);min-width:0}
+.swap>div:nth-child(-n+3){border-top:0}
+.swap .no{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--bad)}
+.swap .arr{color:var(--line-strong);padding-inline:4px;font-family:var(--mono)}
+.swap .yes{font-weight:500}
+.swap .hd{font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.loop{border-left:3px solid var(--human);padding:4px 0 4px 14px;font-size:14px}
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:720px){.moves,.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.moves,.grid4{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+</svg>
+
+<main>
+
+<header>
+  <span class="eyebrow">Agentic SDLC · Operating framework · Oct 2026</span>
+  <h1>Governed Agentic Delivery</h1>
+  <p class="lead">Humans stop reading every line. They own intent, invariants and accountability, and machines verify the rest, with risk deciding how much human judgement each change gets.</p>
+  <div class="moves">
+    <div><b>Intent first</b><small>Humans approve the spec before code exists</small></div>
+    <div><b>Layered verification</b><small>Gates, agents, humans, runtime; none trusted alone</small></div>
+    <div><b>Risk-tiered review</b><small>Human effort follows blast radius, not line count</small></div>
+    <div><b>Engineered comprehension</b><small>Understanding is a deliverable, measured like quality</small></div>
+  </div>
+  <div class="legend"><span><i class="sw h"></i>Human decision point</span><span><i class="sw"></i>Machine or agent work</span></div>
+</header>
+
+<section>
+  <span class="eyebrow">The shift</span>
+  <h2>Move human attention from the diff to the decision</h2>
+  <figure>
+    <svg viewBox="0 0 760 352" role="img" aria-label="Line-by-line review versus governed agentic delivery">
+      <text class="th mid" x="190" y="24">Line-by-line review</text>
+      <text class="th mid" x="570" y="24">Governed agentic delivery</text>
+      <g class="ln">
+        <path d="M190 96V122" marker-end="url(#ah)"/><path d="M190 176V202" marker-end="url(#ah)"/><path d="M190 256V282" marker-end="url(#ah)"/>
+        <path d="M570 96V122" marker-end="url(#ah)"/><path d="M570 176V202" marker-end="url(#ah)"/><path d="M570 256V282" marker-end="url(#ah)"/>
+      </g>
+      <rect class="bx" x="24" y="44" width="332" height="52" rx="8"/><text class="t mid" x="190" y="75">Agents write thousands of lines a day</text>
+      <rect class="hm" x="24" y="124" width="332" height="52" rx="8"/><text class="t mid" x="190" y="155">A human reads every diff</text>
+      <rect class="bd" x="24" y="204" width="332" height="52" rx="8"/><text class="t mid" x="190" y="235">Rubber stamp, or a bottleneck</text>
+      <rect class="bd" x="24" y="284" width="332" height="52" rx="8"/><text class="t mid" x="190" y="315">Comprehension debt grows unseen</text>
+      <rect class="hm" x="404" y="44" width="332" height="52" rx="8"/><text class="t mid" x="570" y="75">Human writes intent and invariants</text>
+      <rect class="bx" x="404" y="124" width="332" height="52" rx="8"/><text class="t mid" x="570" y="155">Gates and agents verify every line</text>
+      <rect class="hm" x="404" y="204" width="332" height="52" rx="8"/><text class="t mid" x="570" y="235">Human judges only the risky hotspots</text>
+      <rect class="gd" x="404" y="284" width="332" height="52" rx="8"/><text class="t mid" x="570" y="315">Fast, auditable and understood</text>
+    </svg>
+  </figure>
+</section>
+
+<section>
+  <span class="eyebrow">Pipeline</span>
+  <h2>Five verification layers, one feedback loop</h2>
+  <p class="lead">Every change passes the same machine layers. The risk score alone decides how much human review it gets.</p>
+  <figure>
+    <svg viewBox="0 0 760 448" role="img" aria-label="Five-layer verification pipeline with risk tiers">
+      <g class="ln">
+        <path d="M184 88H200" marker-end="url(#ah)"/><path d="M360 88H376" marker-end="url(#ah)"/><path d="M536 88H552" marker-end="url(#ah)"/>
+        <path d="M632 116V138H368V160" marker-end="url(#ah)"/>
+        <path d="M368 216V240"/><path d="M104 240H632"/>
+        <path d="M104 240V264" marker-end="url(#ah)"/><path d="M280 240V264" marker-end="url(#ah)"/><path d="M456 240V264" marker-end="url(#ah)"/><path d="M632 240V264" marker-end="url(#ah)"/>
+        <path d="M104 320V368" marker-end="url(#ah)"/><path d="M280 320V368" marker-end="url(#ah)"/><path d="M456 320V368" marker-end="url(#ah)"/><path d="M632 320V368" marker-end="url(#ah)"/>
+        <path class="dash" d="M712 396H740V36H456V60" marker-end="url(#ah)"/>
+      </g>
+      <text class="tq" x="732" y="28" text-anchor="end">feedback: incidents and sampled findings become new checks</text>
+      <rect class="hm" x="24" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="104" y="84">L0 Intent Packet</text><text class="tq mid" x="104" y="100">human-approved spec</text>
+      <rect class="bx" x="200" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="280" y="84">Author agent</text><text class="tq mid" x="280" y="100">small, budgeted PRs</text>
+      <rect class="bx" x="376" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="456" y="84">L1 Hard gates</text><text class="tq mid" x="456" y="100">tests, SAST, fitness</text>
+      <rect class="bx" x="552" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="632" y="84">L2 Agent reviewers</text><text class="tq mid" x="632" y="100">isolated, other model</text>
+      <rect class="bx" x="200" y="160" width="336" height="56" rx="8"/><text class="tn mid" x="368" y="184">Risk scoring service</text><text class="tq mid" x="368" y="200">sets tier from blast radius, data, novelty</text>
+      <rect class="bx" x="24" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="104" y="288">T0 Auto-merge</text><text class="tq mid" x="104" y="304">5% sampled weekly</text>
+      <rect class="bx" x="200" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="280" y="288">T1 Sampled</text><text class="tq mid" x="280" y="304">ack + 20% deep review</text>
+      <rect class="hm" x="376" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="456" y="288">T2 Focused review</text><text class="tq mid" x="456" y="304">1 engineer, hotspots</text>
+      <rect class="hm" x="552" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="632" y="288">T3 Dual review</text><text class="tq mid" x="632" y="304">2 humans, 1 Steward</text>
+      <rect class="bx" x="24" y="368" width="688" height="56" rx="8"/><text class="tn mid" x="368" y="392">L4 Runtime: flags, canary, SLO-based rollback</text><text class="tq mid" x="368" y="408">change-tagged telemetry traces every incident back to its Intent Packet</text>
+    </svg>
+  </figure>
+  <div class="grid3">
+    <div class="card"><span class="k">Human reads · 10 min</span><h3>Intent Packet</h3><p>Acceptance criteria, invariants touched, contract deltas, change budget.</p></div>
+    <div class="card"><span class="k">Human reads · 5 min</span><h3>Change Narrative</h3><p>Agent-written: what changed, why, decisions made, open findings.</p></div>
+    <div class="card"><span class="k">Human judges</span><h3>Attention map</h3><p>The 3 to 10 hotspots that need judgement: invariants, authz, money, new patterns.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Risk tiers</span>
+  <h2>Human effort rises with risk, not with line count</h2>
+  <p class="lead">A deterministic service scores each PR; the highest dimension sets the floor. Most changes should land in T0 and T1.</p>
+  <figure>
+    <svg viewBox="0 0 760 330" role="img" aria-label="Risk tiers as a staircase of human effort">
+      <text class="tq" x="24" y="20">Human effort</text>
+      <text class="tq" x="736" y="324" text-anchor="end">Risk score</text>
+      <path class="ln" d="M24 272H736" marker-end="url(#ah)"/>
+      <rect class="bx" x="24" y="212" width="166" height="60" rx="8"/>
+      <text class="tn mid" x="107" y="236">T0 Auto-merge</text><text class="tq mid" x="107" y="254">gates only, 5% sampled</text>
+      <rect class="bx" x="202" y="168" width="166" height="104" rx="8"/>
+      <text class="tn mid" x="285" y="192">T1 Sampled</text><text class="tq mid" x="285" y="210">narrative acknowledged</text><text class="tq mid" x="285" y="226">20% deep review</text>
+      <rect class="hm" x="380" y="112" width="166" height="160" rx="8"/>
+      <text class="tn mid" x="463" y="136">T2 Focused</text><text class="tq mid" x="463" y="154">1 domain engineer</text><text class="tq mid" x="463" y="170">hotspots, contracts</text><text class="tq mid" x="463" y="186">and test assertions</text>
+      <rect class="hm" x="558" y="40" width="166" height="232" rx="8"/>
+      <text class="tn mid" x="641" y="64">T3 Critical</text><text class="tq mid" x="641" y="82">2 humans, 1 Steward</text><text class="tq mid" x="641" y="98">second model reviews</text><text class="tq mid" x="641" y="114">change-advisory record</text>
+      <text class="t mid" x="107" y="296">Deps, refactors, docs</text>
+      <text class="t mid" x="285" y="296">Known-pattern features</text>
+      <text class="t mid" x="463" y="296">Core domain, PII</text>
+      <text class="t mid" x="641" y="296">AuthZ, money, migrations</text>
+    </svg>
+  </figure>
+  <div class="chips" aria-label="Scoring dimensions">
+    <span>Blast radius</span><span>Data sensitivity</span><span>Domain criticality</span><span>Security surface</span><span>Novelty</span><span>Reversibility</span><span>Reviewer agreement</span>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Comprehension</span>
+  <h2>Engineers stay domain owners without reading every diff</h2>
+  <p class="lead">Understanding comes from active work around the change, which is cheaper and sticks longer than passive diff reading.</p>
+  <figure>
+    <svg viewBox="0 0 760 360" role="img" aria-label="Comprehension loop around domain ownership">
+      <g class="ln">
+        <path d="M478 60Q600 62 626 124" marker-end="url(#ah)"/>
+        <path d="M622 188Q612 248 578 282" marker-end="url(#ah)"/>
+        <path d="M441 313H322" marker-end="url(#ah)"/>
+        <path d="M186 284Q146 250 138 190" marker-end="url(#ah)"/>
+        <path d="M134 128Q160 62 280 60" marker-end="url(#ah)"/>
+      </g>
+      <circle class="hm" cx="380" cy="190" r="66"/>
+      <text class="tn mid" x="380" y="184">Domain</text><text class="tn mid" x="380" y="200">ownership</text><text class="tq mid" x="380" y="218">2+ people per context</text>
+      <rect class="bx" x="282" y="32" width="196" height="56" rx="8"/><text class="tn mid" x="380" y="56">1 · Writes the intent</text><text class="tq mid" x="380" y="72">owns the why and the invariants</text>
+      <rect class="bx" x="532" y="130" width="196" height="56" rx="8"/><text class="tn mid" x="630" y="154">2 · Reads the narrative</text><text class="tq mid" x="630" y="170">a 5-minute change story</text>
+      <rect class="bx" x="441" y="285" width="196" height="56" rx="8"/><text class="tn mid" x="539" y="309">3 · Explains it back</text><text class="tq mid" x="539" y="325">teach-back, scenario checks</text>
+      <rect class="bx" x="123" y="285" width="196" height="56" rx="8"/><text class="tn mid" x="221" y="309">4 · Curates knowledge</text><text class="tq mid" x="221" y="325">invariants, ADRs, glossary</text>
+      <rect class="bx" x="32" y="130" width="196" height="56" rx="8"/><text class="tn mid" x="130" y="154">5 · Builds by hand</text><text class="tq mid" x="130" y="170">craft rotation, on-call lead</text>
+    </svg>
+  </figure>
+  <p class="lead">The knowledge pack per bounded context also grounds the author and reviewer agents, so better human understanding improves agent output too.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Controls</span>
+  <h2>Maker, checker and approver are three separate principals</h2>
+  <p class="lead">The maker–checker control auditors already know, applied to agents, with an immutable evidence trail for every change.</p>
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Separation of duties and evidence chain">
+      <g class="ln">
+        <path d="M240 72H258" marker-end="url(#ah)"/><path d="M476 72H494" marker-end="url(#ah)"/>
+        <path class="dash" d="M132 104V122"/><path class="dash" d="M368 104V122"/><path class="dash" d="M604 104V122"/>
+        <path d="M164 166H186" marker-end="url(#ah)"/><path d="M300 166H322" marker-end="url(#ah)"/><path d="M436 166H458" marker-end="url(#ah)"/><path d="M572 166H594" marker-end="url(#ah)"/>
+      </g>
+      <rect class="bx" x="24" y="40" width="216" height="64" rx="8"/><text class="tn mid" x="132" y="62">Author agent</text><text class="tq mid" x="132" y="78">writes code to the intent</text><text class="tq mid" x="132" y="94">can never approve</text>
+      <rect class="bx" x="260" y="40" width="216" height="64" rx="8"/><text class="tn mid" x="368" y="62">Reviewer agents</text><text class="tq mid" x="368" y="78">isolated context, other model</text><text class="tq mid" x="368" y="94">produce findings, not merges</text>
+      <rect class="hm" x="496" y="40" width="216" height="64" rx="8"/><text class="tn mid" x="604" y="62">Approving human</text><text class="tq mid" x="604" y="78">judges hotspots by tier</text><text class="tq mid" x="604" y="94">signs off the evidence</text>
+      <rect class="band" x="24" y="122" width="688" height="76" rx="8"/>
+      <text class="th" x="40" y="140">Evidence bundle per change · immutable</text>
+      <rect class="bx" x="52" y="150" width="112" height="32" rx="6"/><text class="t mid" x="108" y="171">Intent</text>
+      <rect class="bx" x="188" y="150" width="112" height="32" rx="6"/><text class="t mid" x="244" y="171">Tests</text>
+      <rect class="bx" x="324" y="150" width="112" height="32" rx="6"/><text class="t mid" x="380" y="171">Findings</text>
+      <rect class="bx" x="460" y="150" width="112" height="32" rx="6"/><text class="t mid" x="516" y="171">Approval</text>
+      <rect class="bx" x="596" y="150" width="112" height="32" rx="6"/><text class="t mid" x="652" y="171">Deployment</text>
+      <rect class="bx" x="24" y="218" width="688" height="60" rx="8"/>
+      <text class="tn mid" x="368" y="242">Agent platform · one paved road for every POD</text>
+      <text class="tq mid" x="368" y="260">risk scoring · model registry · reviewer panel · S3 Object Lock evidence store · kill switch</text>
+    </svg>
+  </figure>
+</section>
+
+<section>
+  <span class="eyebrow">Metrics</span>
+  <h2>Measure comprehension next to quality and speed</h2>
+  <div class="grid4">
+    <div class="card"><span class="k">Quality</span><ul><li>Escaped defects per tier</li><li>Change failure rate, MTTR</li></ul></div>
+    <div class="card"><span class="k">Verification</span><ul><li>Reviewer recall on seeded defects</li><li>Mutation score on changed code</li></ul></div>
+    <div class="card"><span class="k">Human load</span><ul><li>Review minutes per change, by tier</li><li>Share of changes in T0–T1</li></ul></div>
+    <div class="card"><span class="k">Comprehension</span><ul><li>Teach-back and scenario pass rate</li><li>People who can explain each context ≥ 2</li></ul></div>
+  </div>
+  <p class="loop">Every escaped defect ends as a new gate, a reviewer prompt fix or a stricter tier rule, so the system learns instead of asking for more human reading.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Roadmap</span>
+  <h2>Agents earn autonomy through evidence</h2>
+  <p class="lead">Nothing reduces human review until the data says it is safe. Set the gate thresholds from your own Phase 1 baseline.</p>
+  <figure>
+    <svg viewBox="0 0 760 214" role="img" aria-label="Four-phase adoption roadmap with three gates">
+      <rect class="bx" x="24" y="24" width="160" height="104" rx="8"/>
+      <text class="tn" x="36" y="48">1 Foundation</text><text class="tq" x="36" y="64">Months 0 to 3</text>
+      <text class="t" x="36" y="84" font-size="11.5">Intent Packets</text><text class="t" x="36" y="100" font-size="11.5">L1 gates + mutation</text><text class="t" x="36" y="116" font-size="11.5">Narratives on all PRs</text>
+      <rect class="bx" x="200" y="24" width="160" height="104" rx="8"/>
+      <text class="tn" x="212" y="48">2 Agent reviewers</text><text class="tq" x="212" y="64">Months 3 to 6</text>
+      <text class="t" x="212" y="84" font-size="11.5">L2 panel in shadow</text><text class="t" x="212" y="100" font-size="11.5">Seeded-defect evals</text><text class="t" x="212" y="116" font-size="11.5">Knowledge packs</text>
+      <rect class="bx" x="376" y="24" width="160" height="104" rx="8"/>
+      <text class="tn" x="388" y="48">3 Tiered autonomy</text><text class="tq" x="388" y="64">Months 6 to 9</text>
+      <text class="t" x="388" y="84" font-size="11.5">T0/T1 in pilot PODs</text><text class="t" x="388" y="100" font-size="11.5">Teach-back rituals</text><text class="t" x="388" y="116" font-size="11.5">Sampling calibrated</text>
+      <rect class="bx" x="552" y="24" width="160" height="104" rx="8"/>
+      <text class="tn" x="564" y="48">4 Scale</text><text class="tq" x="564" y="64">Months 9 to 18</text>
+      <text class="t" x="564" y="84" font-size="11.5">All PODs, paved road</text><text class="t" x="564" y="100" font-size="11.5">Kill-switch drills</text><text class="t" x="564" y="116" font-size="11.5">Audit walkthrough</text>
+      <path class="gate" d="M192 120l8 8l-8 8l-8 -8z"/><path class="gate" d="M368 120l8 8l-8 8l-8 -8z"/><path class="gate" d="M544 120l8 8l-8 8l-8 -8z"/>
+      <text class="tn mid" x="192" y="160">Gate 1</text><text class="tq mid" x="192" y="176">Narratives on 100% of PRs</text><text class="tq mid" x="192" y="192">mutation baseline set</text>
+      <text class="tn mid" x="368" y="160">Gate 2</text><text class="tq mid" x="368" y="176">Reviewer recall above floor</text><text class="tq mid" x="368" y="192">two months running</text>
+      <text class="tn mid" x="544" y="160">Gate 3</text><text class="tq mid" x="544" y="176">T0/T1 escaped defects</text><text class="tq mid" x="544" y="192">at or below baseline</text>
+    </svg>
+  </figure>
+</section>
+
+<section>
+  <span class="eyebrow">Anti-patterns</span>
+  <h2>What to avoid, and what replaces it</h2>
+  <div class="swap">
+    <div class="hd">Avoid</div><div class="hd arr"></div><div class="hd">Instead</div>
+    <div class="no">A human reviews every PR</div><div class="arr">→</div><div class="yes">Risk tiers with sampled deep review</div>
+    <div class="no">The same agent writes and reviews</div><div class="arr">→</div><div class="yes">Independent reviewers on another model</div>
+    <div class="no">Agent-written tests as the only proof</div><div class="arr">→</div><div class="yes">Human acceptance criteria + mutation testing</div>
+    <div class="no">Giant agent PRs</div><div class="arr">→</div><div class="yes">Change budgets in the Intent Packet</div>
+    <div class="no">Trusting reviewer agents blindly</div><div class="arr">→</div><div class="yes">Monthly seeded-defect evaluations</div>
+    <div class="no">Engineers become prompt operators</div><div class="arr">→</div><div class="yes">Craft rotation and human-led on-call</div>
+  </div>
+</section>
+
+<footer>Governed Agentic Delivery · framework summary · 18 Oct 2026</footer>
+</main>
+
+</html>
