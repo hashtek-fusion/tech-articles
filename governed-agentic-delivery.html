@@ -155,7 +155,7 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
       <rect class="bx" x="200" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="280" y="84">Author agent</text><text class="tq mid" x="280" y="100">small, budgeted PRs</text>
       <rect class="bx" x="376" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="456" y="84">L1 Hard gates</text><text class="tq mid" x="456" y="100">tests, SAST, fitness</text>
       <rect class="bx" x="552" y="60" width="160" height="56" rx="8"/><text class="tn mid" x="632" y="84">L2 Agent reviewers</text><text class="tq mid" x="632" y="100">isolated, other model</text>
-      <rect class="bx" x="200" y="160" width="336" height="56" rx="8"/><text class="tn mid" x="368" y="184">Risk scoring service</text><text class="tq mid" x="368" y="200">sets tier from blast radius, data, novelty</text>
+      <rect class="bx" x="200" y="160" width="336" height="56" rx="8"/><text class="tn mid" x="368" y="184">L3 Risk-tiered human review</text><text class="tq mid" x="368" y="200">risk score routes each change to one tier</text>
       <rect class="bx" x="24" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="104" y="288">T0 Auto-merge</text><text class="tq mid" x="104" y="304">5% sampled weekly</text>
       <rect class="bx" x="200" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="280" y="288">T1 Sampled</text><text class="tq mid" x="280" y="304">ack + 20% deep review</text>
       <rect class="hm" x="376" y="264" width="160" height="56" rx="8"/><text class="tn mid" x="456" y="288">T2 Focused review</text><text class="tq mid" x="456" y="304">1 engineer, hotspots</text>
@@ -163,6 +163,9 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
       <rect class="bx" x="24" y="368" width="688" height="56" rx="8"/><text class="tn mid" x="368" y="392">L4 Runtime: flags, canary, SLO-based rollback</text><text class="tq mid" x="368" y="408">change-tagged telemetry traces every incident back to its Intent Packet</text>
     </svg>
   </figure>
+  <div class="chips" aria-label="The five layers">
+    <span>L0 Intent and contract</span><span>L1 Deterministic gates</span><span>L2 Independent agent review</span><span>L3 Risk-tiered human review</span><span>L4 Runtime verification</span>
+  </div>
   <div class="grid3">
     <div class="card"><span class="k">Human reads · 10 min</span><h3>Intent Packet</h3><p>Acceptance criteria, invariants touched, contract deltas, change budget.</p></div>
     <div class="card"><span class="k">Human reads · 5 min</span><h3>Change Narrative</h3><p>Agent-written: what changed, why, decisions made, open findings.</p></div>
