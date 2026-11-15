@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DevOps Agent Reference Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column, each section = eyebrow + one-line lead + a diagram that carries the argument.
+   Colour is semantic: amber = human decision point, neutral = machine work, green/red = outcome. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#17202a; --muted:#596574;
+  --line:#c8cfd8; --line-strong:#8693a3;
+  --human:#a85d0c; --human-tint:#fbeedb;
+  --good:#2f8a5a; --good-tint:#e4f3ea; --bad:#b8433a; --bad-tint:#f9e5e2;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1419; --surface:#161d25; --fg:#e5e9ee; --muted:#9aa5b2;
+  --line:#2d3844; --line-strong:#6d7a8a;
+  --human:#f0a64a; --human-tint:#33250f;
+  --good:#5fbf88; --good-tint:#13291d; --bad:#e27b70; --bad-tint:#331816;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#161d25; --fg:#e5e9ee; --muted:#9aa5b2;
+  --line:#2d3844; --line-strong:#6d7a8a;
+  --human:#f0a64a; --human-tint:#33250f;
+  --good:#5fbf88; --good-tint:#13291d; --bad:#e27b70; --bad-tint:#331816;
+  color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+main{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(30px,5vw,42px);line-height:1.1}
+h2{font-size:24px;line-height:1.2}
+p{margin:0;max-width:66ch}
+code{font:500 .86em var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.eyebrow{font:500 11.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:14px}
+.lead{color:var(--muted)}
+header{display:flex;flex-direction:column;gap:16px}
+.byline{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+.byline b{color:var(--fg);font-weight:600}
+.avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--human-tint);color:var(--human);border:1.5px solid var(--human);font:600 14px/1 var(--display)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:14px;height:10px;border-radius:2px;border:1.5px solid var(--line-strong);background:var(--surface)}
+.sw.h{border-color:var(--human);background:var(--human-tint)}
+.sw.g{border-color:var(--good);background:var(--good-tint)}
+.moves{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+.moves div{background:var(--surface);padding:14px 16px;min-width:0}
+.moves b{display:block;font:600 14px/1.3 var(--sans);margin-bottom:4px}
+.moves small{font-size:12.5px;color:var(--muted);line-height:1.4;display:block}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+figure pre.mermaid{margin:0;background:transparent;font-family:var(--sans);display:flex;justify-content:center;min-width:600px}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:10px}
+/* Mermaid node classes: amber = human decision, green = outcome */
+pre.mermaid .node.human rect, pre.mermaid .node.human polygon, pre.mermaid .node.human circle{fill:var(--human-tint)!important;stroke:var(--human)!important;stroke-width:2px!important}
+pre.mermaid .node.good rect, pre.mermaid .node.good polygon{fill:var(--good-tint)!important;stroke:var(--good)!important}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font:500 12.5px/1 var(--mono);padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)}
+.chips span.n{border-color:var(--good);color:var(--good)}
+.grid2,.grid3,.grid4{display:grid;gap:12px}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.card h3{margin:0;font:600 14px/1.3 var(--sans)}
+.card .k{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card .k.h{color:var(--human)}
+.card .k.g{color:var(--good)}
+.card .k.b{color:var(--bad)}
+.card ul{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.card p{font-size:13px;color:var(--muted)}
+.tbl{border:1px solid var(--line);border-radius:12px;overflow-x:auto;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
+th,td{text-align:left;vertical-align:top;padding:10px 16px;border-top:1px solid var(--line)}
+thead th{border-top:0;font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tbody td:first-child{font-weight:500;color:var(--fg)}
+td{color:var(--muted)}
+.swap{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.swap>div{padding:10px 16px;font-size:13.5px;border-top:1px solid var(--line);min-width:0}
+.swap>div:nth-child(-n+3){border-top:0}
+.swap .no{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--bad)}
+.swap .arr{color:var(--line-strong);padding-inline:4px;font-family:var(--mono)}
+.swap .yes{font-weight:500}
+.swap .hd{font:500 11px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.loop{border-left:3px solid var(--human);padding:4px 0 4px 14px;font-size:14px}
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:720px){.moves,.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3,.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.moves,.grid4{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+
+<main>
+
+<header>
+  <span class="eyebrow">AWS DevOps Agent · Reference architecture · Nov 2026</span>
+  <h1>Closed-Loop Incident Remediation</h1>
+  <p class="lead">AWS DevOps Agent finds the root cause and plans the fix. A coding agent turns the approved plan into a draft pull request. Humans approve the plan and the merge, and Git keeps the evidence.</p>
+  <div class="byline"><span class="avatar" aria-hidden="true">R</span><span><b>Rajesh Ramamoorthy</b> · Enterprise Architect</span></div>
+  <div class="moves">
+    <div><b>Agent config as code</b><small>Skills and agents reviewed in Git, synced at a pinned SHA</small></div>
+    <div><b>Diagnose natively</b><small>DevOps Agent owns RCA and the mitigation plan</small></div>
+    <div><b>Fix through a PR</b><small>A coding agent drafts the permanent fix in the service repo</small></div>
+    <div><b>Two human gates</b><small>Approve the plan before code, approve the merge after</small></div>
+  </div>
+  <div class="legend"><span><i class="sw h"></i>Human decision point</span><span><i class="sw"></i>Machine or agent work</span><span><i class="sw g"></i>Outcome</span></div>
+</header>
+
+<section>
+  <span class="eyebrow">Architecture</span>
+  <h2>Three loops connect GitHub and the Agent Space</h2>
+  <p class="lead">Configuration flows in, findings flow out as events, and approved plans come back as pull requests.</p>
+  <figure>
+    <pre class="mermaid">
+flowchart LR
+  subgraph GH["Enterprise GitHub organization"]
+    OPS["Ops config repo<br/>skills · agents · manifest"]
+    SVC["Service repos<br/>app code + IaC"]
+    ISSUE["Fix request issue"]
+    PR["Draft fix PR"]
+  end
+  subgraph AWS["AWS workload account"]
+    SPACE["AWS DevOps Agent<br/>Agent Space"]
+    TEL["CloudWatch · X-Ray<br/>CloudTrail · topology"]
+    EB["EventBridge<br/>aws.aidevops"]
+    FN["Notifier Lambda"]
+    LLM["Amazon Bedrock"]
+  end
+  APPROVE(["Approver"]):::human
+  OPS -- "1 · asset sync" --> SPACE
+  SVC -. "code + deploy context" .-> SPACE
+  TEL --> SPACE
+  SPACE -- "2 · RCA + plan" --> EB
+  EB --> FN --> ISSUE
+  APPROVE -- "3 · approve" --> ISSUE
+  ISSUE --> CA["Coding agent<br/>Claude Code or Kiro"]
+  CA <--> LLM
+  CA --> PR:::good
+  PR -. "readiness review" .- SPACE
+  classDef human fill:#fbeedb,stroke:#a85d0c,stroke-width:2px
+  classDef good fill:#e4f3ea,stroke:#2f8a5a
+    </pre>
+  </figure>
+  <div class="chips" aria-label="The three loops">
+    <span>1 Config in: Git to Agent Space</span><span>2 Findings out: events and plans</span><span>3 Fix back: approved plan to PR</span>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Service boundaries</span>
+  <h2>What the service does, and the gap we fill</h2>
+  <p class="lead">Per AWS documentation, checked November 2026. The service plans fixes but does not open fix pull requests.</p>
+  <div class="grid3">
+    <div class="card"><span class="k g">Native</span><h3>Investigates incidents</h3><p>Correlates metrics, logs, CloudTrail, topology, code and deployments.</p></div>
+    <div class="card"><span class="k g">Native</span><h3>Plans the mitigation</h3><p>Prepare, validate, apply, verify, rollback, plus a permanent-fix spec as IaC.</p></div>
+    <div class="card"><span class="k g">Native</span><h3>Emits agent-ready specs</h3><p>Read through <code>list-journal-records</code>, type <code>mitigation_summary_md</code>.</p></div>
+    <div class="card"><span class="k g">Native</span><h3>Publishes events</h3><p>EventBridge <code>aws.aidevops</code>: investigation and mitigation lifecycle.</p></div>
+    <div class="card"><span class="k g">Native</span><h3>Reviews changes</h3><p>Release readiness review and verification testing on PRs (preview).</p></div>
+    <div class="card"><span class="k b">Gap</span><h3>No fix pull requests</h3><p>No documented branch or PR creation. A coding agent fills this step.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Loop 1 · Configuration</span>
+  <h2>Skills and custom agents ship like code</h2>
+  <p class="lead">CloudFormation only accepts inline asset files. Importing from GitHub is API-only, so a small sync tool calls it from CI and the service fetches the content itself.</p>
+  <figure>
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor Dev as Platform engineer
+  participant Repo as Ops config repo
+  participant CI as Asset sync workflow
+  participant API as DevOps Agent API
+  participant App as AWS GitHub App
+  Dev->>Repo: PR edits skills, agents, manifest
+  Dev->>Repo: review and merge to main
+  Repo->>CI: push on asset paths
+  CI->>CI: install, unit tests
+  CI->>API: plan with read-only role
+  API-->>CI: drift by git object ID
+  CI->>API: apply with write role, SHA-pinned sourceUrl
+  API->>App: fetch content at that SHA
+  App-->>API: SKILL.md, agent prompt
+  Note over API: asset tracked as synced from GitHub
+    </pre>
+  </figure>
+  <div class="grid3">
+    <div class="card"><span class="k">Pinned</span><p>Every import uses one commit SHA, so the agent runs exactly what was reviewed.</p></div>
+    <div class="card"><span class="k">Guarded</span><p>Apply refuses unless asset folders are clean and already on the default branch.</p></div>
+    <div class="card"><span class="k">Safe deletes</span><p>Removal needs an explicit prune flag and a maximum-deletes budget.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Loop 2 · Diagnosis</span>
+  <h2>From alarm to root cause and a mitigation plan</h2>
+  <p class="lead">The on-call engineer asks for the plan; the agent re-checks live state before writing it.</p>
+  <figure>
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant Src as Alarm, ticket or chat
+  participant Agent as DevOps Agent
+  participant Data as Telemetry and topology
+  participant Code as Service repos
+  actor OnCall as On-call engineer
+  participant EB as EventBridge
+  Src->>Agent: start investigation
+  Agent-->>EB: Investigation Created
+  Agent->>Data: metrics, logs, traces, CloudTrail
+  Agent->>Code: recent commits and deployments
+  Agent-->>EB: Investigation Completed
+  Agent-->>OnCall: root cause
+  OnCall->>Agent: generate mitigation plan
+  Agent->>Agent: re-verify current state
+  Agent-->>EB: Mitigation Completed
+  Agent-->>OnCall: plan and permanent-fix spec
+    </pre>
+  </figure>
+</section>
+
+<section>
+  <span class="eyebrow">Loop 3 · Remediation</span>
+  <h2>The mitigation plan becomes a draft pull request</h2>
+  <p class="lead"><code>Mitigation Completed</code> is the handoff. The coding agent never holds a GitHub write token; a separate job pushes its patch.</p>
+  <figure>
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant EB as EventBridge
+  participant L as Notifier Lambda
+  participant Ops as Fix request issue
+  actor Approver
+  participant CA as Agent job
+  participant LLM as Bedrock
+  participant Push as Push job
+  participant Svc as Service repo
+  EB->>L: Mitigation Completed
+  L->>L: fetch plan via journal records
+  L->>Ops: open issue with plan and suggested repo
+  rect rgba(168, 93, 12, 0.12)
+  Approver->>Ops: Gate 1 · confirm repo, add approved label
+  end
+  Ops->>CA: issues.labeled
+  CA->>CA: approver and repo allowlists
+  CA->>Svc: read-only checkout
+  loop until tests pass or turn limit
+    CA->>LLM: model calls via OIDC role
+    CA->>CA: edit, build, test
+  end
+  CA->>CA: guardrail checks on diff
+  CA->>Push: patch artifact
+  Push->>Svc: branch fix/task-execution, draft PR
+  Note over Svc: DevOps Agent reviews and tests the PR
+  rect rgba(168, 93, 12, 0.12)
+  Approver->>Svc: Gate 2 · review and merge
+  end
+    </pre>
+  </figure>
+  <div class="grid3">
+    <div class="card"><span class="k">Idempotent</span><p>One branch per plan, <code>fix/&lt;task&gt;-&lt;execution&gt;</code>. Re-approving never creates a duplicate PR.</p></div>
+    <div class="card"><span class="k">Scoped</span><p>Start with service repos whose infrastructure the Agent Space actually monitors.</p></div>
+    <div class="card"><span class="k">Honest</span><p>If tests fail, the draft PR still opens and says so in its title and body.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Coding agent</span>
+  <h2>Claude Code or Kiro: only the box that writes code changes</h2>
+  <p class="lead">The event, the issue, both gates and the PR review stay the same. Choose on where the agent must run and how much of the pipeline you want to own. Confirm current features and licensing with each vendor.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Criterion</th><th>Claude Code in GitHub Actions</th><th>Kiro autonomous agent or headless CLI</th></tr></thead>
+      <tbody>
+        <tr><td>Where it runs</td><td>Your CI runners, hosted or self-hosted</td><td>Kiro-managed environment, or your runner with the CLI</td></tr>
+        <tr><td>Trigger</td><td>Any GitHub event: label, dispatch, schedule</td><td>A task submitted to the agent or the CLI</td></tr>
+        <tr><td>Model access</td><td>Amazon Bedrock through an OIDC role, no stored key</td><td>Kiro subscription and service</td></tr>
+        <tr><td>DevOps Agent link</td><td>Your glue: event, Lambda, journal-record API</td><td>AWS's intended target for agent-ready specs; Kiro power queries the Agent Space</td></tr>
+        <tr><td>GitHub write path</td><td>Your GitHub App, used only by a push job</td><td>Kiro's GitHub integration opens the PR</td></tr>
+        <tr><td>Guardrails</td><td>Full control: tool allowlist, limits, diff checks you own</td><td>Kiro steering and hooks plus your branch rules</td></tr>
+        <tr><td>Build effort</td><td>Higher: you own the workflow</td><td>Lower for the handoff; another product to onboard</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <pre class="mermaid">
+flowchart TD
+  Q1{"Must code changes run on<br/>your own runners or network?"}:::human
+  Q2{"Already standardized<br/>on Kiro?"}:::human
+  Q3{"Need custom guardrails<br/>in the pipeline?"}:::human
+  Q4{"Lowest build effort<br/>for the handoff?"}:::human
+  CC["Claude Code in GitHub Actions"]:::good
+  KI["Kiro autonomous agent"]:::good
+  Q1 -- yes --> CC
+  Q1 -- no --> Q2
+  Q2 -- yes --> KI
+  Q2 -- no --> Q3
+  Q3 -- yes --> CC
+  Q3 -- no --> Q4
+  Q4 -- yes --> KI
+  Q4 -- no --> CC
+  classDef human fill:#fbeedb,stroke:#a85d0c,stroke-width:2px
+  classDef good fill:#e4f3ea,stroke:#2f8a5a
+    </pre>
+  </figure>
+  <div class="grid2">
+    <div class="card"><span class="k">Choose Claude Code when</span><ul><li>Change control requires the agent inside your CI and AWS boundary</li><li>Model use must be billed and logged through Bedrock in your account</li><li>Guardrails must live in code you own and review</li></ul></div>
+    <div class="card"><span class="k">Choose Kiro when</span><ul><li>Teams already use Kiro and its spec-driven workflow</li><li>You want AWS's intended handoff with the least glue code</li><li>Engineers also want interactive investigation in the IDE</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Controls</span>
+  <h2>Every fix request moves through two human gates</h2>
+  <p class="lead">Blocked diffs stop before any push. Nothing reaches production without the normal pipeline.</p>
+  <figure>
+    <pre class="mermaid">
+flowchart LR
+  P["Proposed<br/>issue opened"] --> G1{"Gate 1<br/>approve plan"}:::human
+  G1 -- rejected --> X["Closed"]
+  G1 -- approved --> D["Drafting<br/>coding agent"]
+  D --> C{"Guardrails<br/>pass?"}
+  C -- "IAM or CI change" --> B["Blocked"]
+  C -- pass --> R["Draft PR"]
+  R --> G2{"Gate 2<br/>review"}:::human
+  G2 -- rejected --> X
+  G2 -- merged --> M["Merged, normal<br/>pipeline deploys"]:::good
+  classDef human fill:#fbeedb,stroke:#a85d0c,stroke-width:2px
+  classDef good fill:#e4f3ea,stroke:#2f8a5a
+    </pre>
+  </figure>
+  <div class="grid4">
+    <div class="card"><span class="k h">Gate 1</span><p>Approval label, checked against an approver allowlist.</p></div>
+    <div class="card"><span class="k h">Gate 2</span><p>Draft PR only. The agent can never merge or deploy.</p></div>
+    <div class="card"><span class="k">Diff checks</span><p>Refuse <code>.github/**</code>, <code>CODEOWNERS</code> and any IAM resource or policy change.</p></div>
+    <div class="card"><span class="k">Token isolation</span><p>The push job holds the GitHub token, has no model access and runs no repo code.</p></div>
+  </div>
+  <p class="loop">If one person must hold both gates on a small team, record it as a segregation-of-duties exception with compensating controls.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Identities</span>
+  <h2>One identity per job, each scoped to one thing</h2>
+  <p class="lead">GitHub reaches AWS through OIDC trust scoped by repo, environment and default branch. The only stored secrets are two GitHub App keys.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Identity</th><th>Used by</th><th>Least-privilege scope</th></tr></thead>
+      <tbody>
+        <tr><td>DevOps Agent GitHub App</td><td>The service</td><td>Associated repos only; read-only unless you want PR review and testing</td></tr>
+        <tr><td>Agent role</td><td>The service</td><td>AWS-managed policy: broad read of resources and telemetry</td></tr>
+        <tr><td>Asset sync plan role</td><td>CI plan job</td><td><code>ListAssets</code>, <code>GetAssetFile</code> on one Agent Space</td></tr>
+        <tr><td>Asset sync apply role</td><td>CI apply job</td><td>Plan rights plus create, update, delete asset</td></tr>
+        <tr><td>Notifier Lambda role</td><td>Lambda</td><td>Read executions and journal records; read one secret</td></tr>
+        <tr><td>Model access role</td><td>Coding agent job</td><td><code>bedrock:InvokeModel*</code> on approved models only</td></tr>
+        <tr><td>Issue-writer GitHub App</td><td>Lambda</td><td>Issues write on the ops config repo only</td></tr>
+        <tr><td>PR-writer GitHub App</td><td>Push job</td><td>Contents and PR write on target service repos, never the ops repo</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Roadmap</span>
+  <h2>Earn automation one step at a time</h2>
+  <p class="lead">Each phase starts only when the previous one has shown it can be trusted.</p>
+  <figure>
+    <pre class="mermaid">
+flowchart LR
+  A["1 Foundation<br/>Agent Space as IaC<br/>scoped repo access"] --> B["2 Config as code<br/>skills and agents<br/>synced from Git"]
+  B --> C["3 Trust diagnosis<br/>review plans<br/>by hand"]
+  C --> G{"Plans<br/>reliable?"}:::human
+  G -- yes --> D["4 Notify<br/>events open<br/>fix requests"]
+  D --> E["5 Draft fixes<br/>one low-risk<br/>service repo"]
+  E --> F["6 Expand<br/>more repos,<br/>tracked metrics"]:::good
+  classDef human fill:#fbeedb,stroke:#a85d0c,stroke-width:2px
+  classDef good fill:#e4f3ea,stroke:#2f8a5a
+    </pre>
+  </figure>
+  <div class="grid4">
+    <div class="card"><span class="k">Diagnosis</span><ul><li>Plans approved unchanged</li><li>Root cause confirmed rate</li></ul></div>
+    <div class="card"><span class="k">Fix quality</span><ul><li>PRs merged without rework</li><li>Guardrail blocks per month</li></ul></div>
+    <div class="card"><span class="k">Speed</span><ul><li>Incident to merged fix</li><li>Time waiting at each gate</li></ul></div>
+    <div class="card"><span class="k">Safety</span><ul><li>Reverted autofix PRs</li><li>Repeat incidents after fix</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Anti-patterns</span>
+  <h2>What to avoid, and what replaces it</h2>
+  <div class="swap">
+    <div class="hd">Avoid</div><div class="hd arr"></div><div class="hd">Instead</div>
+    <div class="no">Authoring skills in the web console</div><div class="arr">→</div><div class="yes">Skills in Git, synced at a pinned SHA</div>
+    <div class="no">Auto-applying mitigation commands</div><div class="arr">→</div><div class="yes">Permanent fix through a PR and the normal pipeline</div>
+    <div class="no">Coding agent starts on every RCA</div><div class="arr">→</div><div class="yes">Human approves the plan first</div>
+    <div class="no">Agent holds the GitHub write token</div><div class="arr">→</div><div class="yes">Separate push job with its own App</div>
+    <div class="no">Agent may edit IAM or CI workflows</div><div class="arr">→</div><div class="yes">Diff checks block both; humans own them</div>
+    <div class="no">Long-lived API keys in CI</div><div class="arr">→</div><div class="yes">OIDC roles scoped per job and branch</div>
+  </div>
+</section>
+
+<footer>Closed-Loop Incident Remediation · AWS DevOps Agent reference architecture · Rajesh Ramamoorthy · 15 Nov 2026</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  // Standalone copy only: render the <pre class="mermaid"> blocks with the page's colour tokens.
+  const css = getComputedStyle(document.documentElement);
+  const token = (name) => css.getPropertyValue(name).trim();
+  mermaid.initialize({
+    startOnLoad: true,
+    securityLevel: 'strict',
+    theme: 'base',
+    themeVariables: {
+      fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+      background: token('--surface'),
+      primaryColor: token('--surface'),
+      primaryTextColor: token('--fg'),
+      primaryBorderColor: token('--line-strong'),
+      lineColor: token('--line-strong'),
+      secondaryColor: token('--bg'),
+      tertiaryColor: token('--bg'),
+      clusterBkg: token('--bg'),
+      clusterBorder: token('--line'),
+      actorBkg: token('--surface'),
+      actorBorder: token('--line-strong'),
+      actorTextColor: token('--fg'),
+      signalColor: token('--fg'),
+      signalTextColor: token('--fg'),
+      noteBkgColor: token('--good-tint'),
+      noteBorderColor: token('--good'),
+      noteTextColor: token('--fg'),
+      labelBoxBkgColor: token('--bg'),
+      labelTextColor: token('--fg'),
+      loopTextColor: token('--muted'),
+      edgeLabelBackground: token('--surface'),
+      textColor: token('--fg')
+    }
+  });
+</script>
+</body>
+</html>
